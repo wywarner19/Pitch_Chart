@@ -14,41 +14,23 @@ body{font-family:-apple-system,sans-serif;background:#f2f2f7;color:#1c1c1e;min-h
 .card{background:#fff;border-radius:14px;padding:16px;margin-bottom:14px;border:1px solid #e5e5ea}
 h1{font-size:22px;font-weight:700}
 h2{font-size:18px;font-weight:600}
-h3{font-size:15px;font-weight:600;color:#6e6e73}
 label{font-size:13px;color:#6e6e73;display:block;margin-bottom:5px;font-weight:500}
-input[type=text],input[type=date],input[type=number],textarea,select{
+input[type=text],input[type=date],input[type=number],textarea{
   width:100%;border:1.5px solid #d1d1d6;border-radius:10px;padding:11px 14px;
   font-size:16px;background:#fff;outline:none;font-family:inherit;color:#1c1c1e}
-input:focus,textarea:focus,select:focus{border-color:#007aff}
+input:focus,textarea:focus{border-color:#007aff}
 textarea{resize:vertical;min-height:70px}
 .btn{display:inline-flex;align-items:center;justify-content:center;border:none;border-radius:12px;
-  cursor:pointer;font-size:16px;font-weight:600;padding:14px 20px;transition:all .15s;letter-spacing:-.2px}
+  cursor:pointer;font-size:16px;font-weight:600;padding:14px 20px;transition:all .15s}
 .btn:active{transform:scale(.97);opacity:.85}
 .btn-primary{background:#007aff;color:#fff}
 .btn-success{background:#34c759;color:#fff}
 .btn-danger{background:#ff3b30;color:#fff}
 .btn-gray{background:#e5e5ea;color:#3a3a3c}
-.btn-orange{background:#ff9500;color:#fff}
 .btn-full{width:100%;margin-top:8px}
 .btn-sm{padding:9px 16px;font-size:14px;border-radius:10px}
 
 /* YN big buttons */
-.yn-row{display:flex;gap:8px}
-.yn-btn{flex:1;height:52px;border:2px solid #d1d1d6;border-radius:12px;background:#fff;
-  font-size:17px;font-weight:700;cursor:pointer;transition:all .15s;color:#3a3a3c}
-.yn-btn:active{transform:scale(.96)}
-.yn-btn.y-on{background:#34c759;border-color:#34c759;color:#fff}
-.yn-btn.n-on{background:#ff3b30;border-color:#ff3b30;color:#fff}
-
-/* AB list */
-.ab-item{display:grid;grid-template-columns:32px 1fr 1fr 1fr 1fr 1fr 1fr 110px 36px;
-  gap:6px;align-items:center;padding:8px 0;border-bottom:1px solid #f2f2f7}
-.ab-item:last-child{border-bottom:none}
-.ab-num{font-size:13px;color:#8e8e93;text-align:center;font-weight:500}
-.ab-col-label{font-size:10px;color:#8e8e93;text-align:center;font-weight:600;letter-spacing:.3px}
-.ab-header{display:grid;grid-template-columns:32px 1fr 1fr 1fr 1fr 1fr 1fr 110px 36px;
-  gap:6px;padding:6px 0 8px;border-bottom:2px solid #e5e5ea;margin-bottom:4px}
-
 .yn-mini{display:flex;border-radius:8px;overflow:hidden;border:1.5px solid #d1d1d6;height:40px}
 .yn-mini button{flex:1;border:none;background:#fff;font-size:13px;font-weight:600;cursor:pointer}
 .yn-mini button:active{opacity:.7}
@@ -56,23 +38,40 @@ textarea{resize:vertical;min-height:70px}
 .yn-mini button.n-on{background:#ff3b30;color:#fff}
 .yn-mini button:first-child{border-right:1.5px solid #d1d1d6}
 .yn-dash{height:40px;display:flex;align-items:center;justify-content:center;color:#c7c7cc;font-size:20px}
+.yn-strike{height:40px;display:flex;align-items:center;justify-content:center;
+  color:#c7c7cc;font-size:13px;font-weight:600;text-decoration:line-through;
+  border:1.5px solid #f0f0f0;border-radius:8px;background:#fafafa;padding:0 8px}
 
-.result-input{border:1.5px solid #d1d1d6;border-radius:8px;padding:5px 8px;font-size:14px;
-  width:100%;background:#fff;font-family:inherit}
+/* AB table */
+.ab-table{width:100%;border-collapse:collapse}
+.ab-table th{font-size:11px;color:#6e6e73;font-weight:500;padding:6px 4px;text-align:center;border-bottom:1px solid #e5e5ea;white-space:nowrap}
+.ab-table td{padding:5px 3px;border-bottom:1px solid #f2f2f7;vertical-align:middle}
+.ab-num{font-size:13px;color:#6e6e73;text-align:center;min-width:28px}
+.inn-label{font-size:10px;color:#007aff;display:block;font-weight:600}
+.result-input{border:1px solid #d1d1d6;border-radius:6px;padding:6px 8px;font-size:14px;width:100%;min-width:80px;background:#fff}
 .result-input:focus{outline:none;border-color:#007aff}
-.del-btn{width:36px;height:40px;border:none;background:none;color:#ff3b30;font-size:22px;cursor:pointer;border-radius:8px}
-.del-btn:active{background:#fff0f0}
+.del-btn{width:32px;height:40px;border:none;background:none;color:#ff3b30;font-size:22px;cursor:pointer;border-radius:8px}
 
-/* pitch count */
+/* pitch count display */
 .pitch-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .pitch-big{font-size:48px;font-weight:700;color:#007aff;min-width:70px;text-align:center}
-.pitch-btns{display:flex;gap:8px;flex-direction:column}
 .pitch-adj{display:flex;gap:6px}
 .pitch-adj button{width:52px;height:44px;border:1.5px solid #d1d1d6;border-radius:10px;
   background:#fff;font-size:18px;font-weight:700;cursor:pointer;color:#1c1c1e}
 .pitch-adj button:active{background:#f2f2f7}
 
-/* summary stats */
+/* pitch count modal overlay */
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);
+  z-index:200;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal-box{background:#fff;border-radius:16px;padding:24px;width:100%;max-width:340px;text-align:center}
+.modal-box h2{margin-bottom:8px}
+.modal-box p{font-size:14px;color:#6e6e73;margin-bottom:20px}
+.modal-input{font-size:32px;font-weight:700;text-align:center;border:2px solid #007aff;
+  border-radius:12px;padding:12px;width:100%;margin-bottom:16px;color:#1c1c1e}
+.modal-btns{display:flex;gap:10px}
+.modal-btns button{flex:1}
+
+/* summary */
 .stat-row{display:flex;align-items:center;padding:11px 0;border-bottom:1px solid #f2f2f7;font-size:15px}
 .stat-row:last-child{border-bottom:none}
 .stat-label{flex:1;color:#1c1c1e}
@@ -83,8 +82,13 @@ textarea{resize:vertical;min-height:70px}
 .pct-bad{background:#ffdede;color:#a00}
 .pct-na{background:#f2f2f7;color:#6e6e73}
 
-/* inning score badges */
-.badge{font-size:11px;padding:3px 7px;border-radius:6px;font-weight:700;display:inline-block}
+.inn-score-grid{display:grid;gap:8px;margin-top:8px}
+.inn-score-card{background:#f9f9f9;border-radius:10px;padding:10px;text-align:center;border:1px solid #e5e5ea}
+.score-num{font-size:26px;font-weight:800}
+.score-good{color:#34c759}
+.score-bad{color:#ff3b30}
+.badge-row{display:flex;flex-wrap:wrap;gap:3px;justify-content:center;margin-top:4px}
+.badge{font-size:10px;padding:2px 5px;border-radius:4px;font-weight:700}
 .badge-s{background:#d4f1df;color:#1a7a3e}
 .badge-t{background:#dce8fb;color:#0a3d8f}
 .badge-r{background:#ede9fd;color:#3730a3}
@@ -92,42 +96,31 @@ textarea{resize:vertical;min-height:70px}
 .badge-k{background:#fff3cd;color:#7a4f00}
 .badge-e{background:#fde8e1;color:#8b2500}
 
-.inn-score-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
-.inn-score-card{background:#f9f9f9;border-radius:12px;padding:12px;text-align:center;border:1px solid #e5e5ea}
-.score-num{font-size:30px;font-weight:800}
-.score-good{color:#34c759}
-.score-bad{color:#ff3b30}
-.badge-row{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-top:6px}
-
 .metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
 .metric-card{background:#fff;border-radius:12px;padding:14px;text-align:center;border:1px solid #e5e5ea}
-.metric-val{font-size:30px;font-weight:800;margin-top:2px}
+.metric-val{font-size:28px;font-weight:800;margin-top:2px}
 .m-good{color:#34c759}
 .m-bad{color:#ff3b30}
 .m-neutral{color:#1c1c1e}
-.metric-label{font-size:12px;color:#8e8e93;font-weight:500}
 
 .top-bar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
 .top-bar h1{flex:1;min-width:0}
 .pill{background:#e5e5ea;border-radius:20px;padding:5px 12px;font-size:13px;color:#3a3a3c;font-weight:500}
 .pill-blue{background:#dce8fb;color:#0a3d8f}
-.inning-banner{background:#007aff;color:#fff;border-radius:14px;padding:12px 16px;margin-bottom:14px;
-  display:flex;align-items:center;justify-content:space-between}
-.inning-banner h2{color:#fff;font-size:20px}
+
+.hist-card{background:#fff;border-radius:12px;border:1px solid #e5e5ea;margin-bottom:10px;overflow:hidden}
+.hist-header{padding:12px 16px;display:flex;align-items:center;gap:10px;background:#f9f9f9;border-bottom:1px solid #e5e5ea;cursor:pointer}
+.hist-body{padding:12px 16px;display:none}
+.hist-body.open{display:block}
 
 .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(20px);
   background:#1c1c1e;color:#fff;padding:13px 22px;border-radius:12px;font-size:15px;
   z-index:999;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-.divider{height:1px;background:#e5e5ea;margin:12px 0}
-.section-title{font-size:13px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 
-/* completed inning in history */
-.hist-card{background:#fff;border-radius:12px;border:1px solid #e5e5ea;margin-bottom:10px;overflow:hidden}
-.hist-header{padding:12px 16px;display:flex;align-items:center;gap:10px;background:#f9f9f9;border-bottom:1px solid #e5e5ea;cursor:pointer}
-.hist-body{padding:12px 16px;display:none}
-.hist-body.open{display:block}
+@media(min-width:600px){.inn-score-grid{grid-template-columns:repeat(auto-fill,minmax(100px,1fr))}}
 </style>
 </head>
 <body>
@@ -136,10 +129,10 @@ textarea{resize:vertical;min-height:70px}
 <div id="screen-setup" class="screen active">
   <div class="top-bar"><h1>⚾ Pitching Chart</h1></div>
   <div class="card">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <div class="grid-2" style="gap:12px">
       <div><label>Date</label><input type="date" id="s-date"></div>
       <div><label>Opponent</label><input type="text" id="s-opp" placeholder="Team name"></div>
-      <div style="grid-column:1/-1"><label>Game result <span style="color:#c7c7cc;font-weight:400">(optional — fill after game)</span></label><input type="text" id="s-gameresult" placeholder="W 5-2"></div>
+      <div style="grid-column:1/-1"><label>Game result <span style="color:#c7c7cc;font-weight:400">(fill after game)</span></label><input type="text" id="s-gameresult" placeholder="W 5-2"></div>
       <div style="grid-column:1/-1"><label>Starting pitcher</label><input type="text" id="s-pitcher" placeholder="Last name"></div>
     </div>
     <button class="btn btn-primary btn-full" onclick="startGame()">Start game →</button>
@@ -155,42 +148,28 @@ textarea{resize:vertical;min-height:70px}
   </div>
 
   <div class="card" style="padding:12px 16px">
-    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-      <div style="flex:1;min-width:160px">
-        <label>Pitcher this inning</label>
-        <input type="text" id="inn-pitcher" placeholder="Last name">
-      </div>
-      <div>
-        <label>Pitch count</label>
-        <div class="pitch-row">
-          <div class="pitch-big" id="pitch-display">0</div>
-          <div class="pitch-btns">
-            <div class="pitch-adj">
-              <button onclick="adjPitch(-1)">−</button>
-              <button onclick="adjPitch(1)">+</button>
-              <button onclick="adjPitch(5)" style="font-size:14px">+5</button>
-            </div>
-            <button onclick="setPitchExact()" style="font-size:13px;padding:6px 10px;border:1.5px solid #d1d1d6;border-radius:8px;background:#fff;cursor:pointer">Set exact</button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <div><label>Pitcher this inning</label><input type="text" id="inn-pitcher" placeholder="Last name"></div>
   </div>
 
-  <!-- AB header -->
   <div class="card" style="padding:12px 16px">
-    <div class="ab-header">
-      <div class="ab-col-label">AB</div>
-      <div class="ab-col-label">FPS</div>
-      <div class="ab-col-label">1-1 CNT</div>
-      <div class="ab-col-label">1-1 WIN</div>
-      <div class="ab-col-label">A3P</div>
-      <div class="ab-col-label">LD OUT</div>
-      <div class="ab-col-label">WE WIN</div>
-      <div class="ab-col-label">RESULT</div>
-      <div></div>
+    <div class="ab-table-wrap" style="overflow-x:auto">
+    <table class="ab-table" id="ab-table">
+      <thead>
+        <tr>
+          <th style="min-width:28px">AB</th>
+          <th style="min-width:64px">FPS</th>
+          <th style="min-width:72px">1-1 CNT</th>
+          <th style="min-width:72px">1-1 WIN</th>
+          <th style="min-width:64px">A3P</th>
+          <th style="min-width:64px">LD OUT</th>
+          <th style="min-width:64px">WE WIN</th>
+          <th style="min-width:90px">Result</th>
+          <th style="min-width:32px"></th>
+        </tr>
+      </thead>
+      <tbody id="ab-tbody"></tbody>
+    </table>
     </div>
-    <div id="ab-list"></div>
     <button class="btn btn-gray btn-full" style="margin-top:10px" onclick="addAB()">+ Add batter</button>
   </div>
 
@@ -199,15 +178,26 @@ textarea{resize:vertical;min-height:70px}
     <textarea id="inn-notes" placeholder="e.g. Good FPS%, improve 1-0 win %…"></textarea>
   </div>
 
-  <button class="btn btn-success btn-full" style="font-size:18px;padding:16px" onclick="endInning()">End inning →</button>
+  <button class="btn btn-success btn-full" style="font-size:18px;padding:16px" onclick="endInningClick()">End inning →</button>
   <button class="btn btn-danger btn-full" style="margin-top:8px;font-size:14px" onclick="confirmEndGame()">End game &amp; view final summary</button>
+</div>
+
+<!-- PITCH COUNT MODAL -->
+<div id="pitch-modal" class="modal-overlay" style="display:none">
+  <div class="modal-box">
+    <h2>Pitch count</h2>
+    <p>How many pitches were thrown this inning?</p>
+    <input class="modal-input" type="number" id="modal-pitch-input" placeholder="0" min="0">
+    <div class="modal-btns">
+      <button class="btn btn-gray" onclick="cancelPitchModal()">Cancel</button>
+      <button class="btn btn-success" onclick="confirmPitchModal()">End inning →</button>
+    </div>
+  </div>
 </div>
 
 <!-- INNING COMPLETE -->
 <div id="screen-inn-summary" class="screen">
-  <div class="top-bar">
-    <h1 id="is-title">Inning 1 complete</h1>
-  </div>
+  <div class="top-bar"><h1 id="is-title">Inning 1 complete</h1></div>
   <div id="is-content"></div>
   <button class="btn btn-primary btn-full" style="font-size:18px;padding:16px;margin-top:8px" onclick="startNextInning()">Start inning <span id="is-next">2</span> →</button>
   <button class="btn btn-gray btn-full" style="margin-top:8px" onclick="showSummary(false)">View full summary</button>
@@ -217,8 +207,7 @@ textarea{resize:vertical;min-height:70px}
 <div id="screen-summary" class="screen">
   <div class="top-bar">
     <h1 id="sum-title">Game summary</h1>
-    <button class="btn btn-gray btn-sm" id="sum-back-btn" onclick="backToGame()">← Back</button>
-    <button class="btn btn-primary btn-sm" onclick="copyForExcel()">Copy ↗</button>
+    <button class="btn btn-gray btn-sm" id="sum-back-btn" onclick="showScreen('inning')">← Back</button>
   </div>
   <div id="sum-gameinfo" style="font-size:14px;color:#8e8e93;margin-bottom:14px"></div>
   <div class="metric-grid" id="sum-metrics"></div>
@@ -241,20 +230,16 @@ let game = {
   currentInning: { num:1, pitcher:'', pitchCount:0, abs:[], notes:'' }
 };
 
-function save(){ try{ localStorage.setItem('pc_v2', JSON.stringify(game)); }catch(e){} }
+function save(){ try{ localStorage.setItem('pc_v3', JSON.stringify(game)); }catch(e){} }
 function load(){
-  try{
-    const d = localStorage.getItem('pc_v2');
-    if(d){ game = JSON.parse(d); }
-  }catch(e){}
+  try{ const d=localStorage.getItem('pc_v3'); if(d) game=JSON.parse(d); }catch(e){}
 }
 
 function showToast(msg){
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 2200);
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
 }
-
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('screen-'+id).classList.add('active');
@@ -263,42 +248,23 @@ function showScreen(id){
 
 // ── SETUP ──
 function startGame(){
-  game.date = document.getElementById('s-date').value || '';
-  game.opp = document.getElementById('s-opp').value.trim() || 'Opponent';
-  game.gameResult = document.getElementById('s-gameresult').value.trim() || '';
-  game.startingPitcher = document.getElementById('s-pitcher').value.trim() || '';
-  game.innings = [];
-  game.currentInning = { num:1, pitcher: game.startingPitcher, pitchCount:0, abs:[], notes:'' };
-  save();
-  enterInning();
+  game.date=document.getElementById('s-date').value||'';
+  game.opp=document.getElementById('s-opp').value.trim()||'Opponent';
+  game.gameResult=document.getElementById('s-gameresult').value.trim()||'';
+  game.startingPitcher=document.getElementById('s-pitcher').value.trim()||'';
+  game.innings=[];
+  game.currentInning={num:1,pitcher:game.startingPitcher,pitchCount:0,abs:[],notes:''};
+  save(); enterInning();
 }
 
-// ── INNING ENTRY ──
+// ── INNING ──
 function enterInning(){
-  const ci = game.currentInning;
-  document.getElementById('inn-title').textContent = 'Inning ' + ci.num;
-  document.getElementById('inn-pitcher').value = ci.pitcher;
-  document.getElementById('inn-notes').value = ci.notes || '';
-  document.getElementById('pitch-display').textContent = ci.pitchCount;
-  renderABList();
-  updateLiveScore();
+  const ci=game.currentInning;
+  document.getElementById('inn-title').textContent='Inning '+ci.num;
+  document.getElementById('inn-pitcher').value=ci.pitcher;
+  document.getElementById('inn-notes').value=ci.notes||'';
+  renderABList(); updateLiveScore();
   showScreen('inning');
-}
-
-function adjPitch(n){
-  game.currentInning.pitchCount = Math.max(0, (game.currentInning.pitchCount||0) + n);
-  document.getElementById('pitch-display').textContent = game.currentInning.pitchCount;
-  updateLiveScore();
-  save();
-}
-
-function setPitchExact(){
-  const v = prompt('Enter exact pitch count:');
-  if(v !== null && !isNaN(parseInt(v))){
-    game.currentInning.pitchCount = Math.max(0, parseInt(v));
-    document.getElementById('pitch-display').textContent = game.currentInning.pitchCount;
-    updateLiveScore(); save();
-  }
 }
 
 function newAB(){ return {fps:null,cnt11:null,win11:null,a3p:null,leadoff:null,wewin:null,result:''}; }
@@ -306,7 +272,7 @@ function newAB(){ return {fps:null,cnt11:null,win11:null,a3p:null,leadoff:null,w
 function addAB(){
   game.currentInning.abs.push(newAB());
   save(); renderABList(); updateLiveScore();
-  setTimeout(()=>{ window.scrollTo(0,document.body.scrollHeight); },100);
+  setTimeout(()=>window.scrollTo(0,document.body.scrollHeight),100);
 }
 
 function delAB(i){
@@ -314,38 +280,48 @@ function delAB(i){
   save(); renderABList(); updateLiveScore();
 }
 
-function setABField(i, field, val){
-  const ab = game.currentInning.abs[i];
-  ab[field] = ab[field]===val ? null : val;
+function setABField(i,field,val){
+  const ab=game.currentInning.abs[i];
+  ab[field]=ab[field]===val?null:val;
+  // if cnt11 flipped to N, clear win11
+  if(field==='cnt11'&&ab[field]==='N') ab.win11=null;
   save(); renderABList(); updateLiveScore();
 }
 
-function setABResult(i, val){
-  game.currentInning.abs[i].result = val;
+function setABResult(i,val){
+  game.currentInning.abs[i].result=val;
   save(); updateLiveScore();
 }
 
 function renderABList(){
-  const list = document.getElementById('ab-list');
-  const abs = game.currentInning.abs;
-  if(!abs.length){ list.innerHTML='<div style="text-align:center;color:#c7c7cc;padding:16px;font-size:14px">No batters yet — tap Add batter</div>'; return; }
-  list.innerHTML = abs.map((ab,i)=>{
-    const isLead = i===0;
-    return `<div class="ab-item">
-      <div class="ab-num">${i+1}</div>
-      ${miniYN(i,'fps',ab.fps)}
-      ${miniYN(i,'cnt11',ab.cnt11)}
-      ${miniYN(i,'win11',ab.win11)}
-      ${miniYN(i,'a3p',ab.a3p)}
-      ${isLead ? miniYN(i,'leadoff',ab.leadoff) : '<div class="yn-dash">—</div>'}
-      ${miniYN(i,'wewin',ab.wewin)}
-      <input class="result-input" type="text" value="${ab.result}" onchange="setABResult(${i},this.value)" placeholder="K, BB…">
-      <button class="del-btn" onclick="delAB(${i})">×</button>
-    </div>`;
+  const tbody=document.getElementById('ab-tbody');
+  const abs=game.currentInning.abs;
+  if(!abs.length){
+    tbody.innerHTML=`<tr><td colspan="9" style="text-align:center;color:#c7c7cc;padding:20px;font-size:14px">No batters yet — tap Add batter</td></tr>`;
+    return;
+  }
+  tbody.innerHTML=abs.map((ab,i)=>{
+    const isLead=i===0;
+    const win11Cell = ab.cnt11==='N'
+      ? `<td><div class="yn-strike">N/A</div></td>`
+      : ab.cnt11===null
+        ? `<td><div class="yn-strike" style="opacity:.4">—</div></td>`
+        : `<td>${miniYN(i,'win11',ab.win11)}</td>`;
+    return `<tr>
+      <td class="ab-num">${i+1}</td>
+      <td>${miniYN(i,'fps',ab.fps)}</td>
+      <td>${miniYN(i,'cnt11',ab.cnt11)}</td>
+      ${win11Cell}
+      <td>${miniYN(i,'a3p',ab.a3p)}</td>
+      <td>${isLead ? miniYN(i,'leadoff',ab.leadoff) : '<div class="yn-dash">—</div>'}</td>
+      <td>${miniYN(i,'wewin',ab.wewin)}</td>
+      <td><input class="result-input" type="text" value="${ab.result}" onchange="setABResult(${i},this.value)" placeholder="K, BB…"></td>
+      <td><button class="del-btn" onclick="delAB(${i})">×</button></td>
+    </tr>`;
   }).join('');
 }
 
-function miniYN(i, field, val){
+function miniYN(i,field,val){
   return `<div class="yn-mini">
     <button class="${val==='Y'?'y-on':''}" onclick="setABField(${i},'${field}','Y')">Y</button>
     <button class="${val==='N'?'n-on':''}" onclick="setABField(${i},'${field}','N')">N</button>
@@ -353,34 +329,55 @@ function miniYN(i, field, val){
 }
 
 function syncInnFields(){
-  game.currentInning.pitcher = document.getElementById('inn-pitcher').value.trim();
-  game.currentInning.notes = document.getElementById('inn-notes').value.trim();
+  game.currentInning.pitcher=document.getElementById('inn-pitcher').value.trim();
+  game.currentInning.notes=document.getElementById('inn-notes').value.trim();
+}
+
+// ── PITCH MODAL ──
+function endInningClick(){
+  syncInnFields();
+  if(game.currentInning.abs.length===0){ showToast('Add at least one batter first'); return; }
+  // show pitch count modal
+  document.getElementById('modal-pitch-input').value='';
+  document.getElementById('pitch-modal').style.display='flex';
+  setTimeout(()=>document.getElementById('modal-pitch-input').focus(),100);
+}
+
+function cancelPitchModal(){
+  document.getElementById('pitch-modal').style.display='none';
+}
+
+function confirmPitchModal(){
+  const val=parseInt(document.getElementById('modal-pitch-input').value)||0;
+  game.currentInning.pitchCount=val;
+  document.getElementById('pitch-modal').style.display='none';
+  endInning();
 }
 
 // ── CALC ──
 function isOut(r){
-  const s=r.trim().toLowerCase();
+  const s=(r||'').trim().toLowerCase();
   if(!s) return false;
-  return /backwards k|frontwards k|\bk\b/.test(s)||/^\d-\d/.test(s)||/^[fp]\d/.test(s)||/^e\d?$/.test(s)||s==='fc'||s.includes('dp')||/^[fp][ou]/.test(s)||/^p\d/.test(s)||/^f\d/.test(s);
+  return /backwards k|frontwards k|\bk\b/.test(s)||/^\d-\d/.test(s)||/^[fp]\d/.test(s)||/^e\d?$/.test(s)||s==='fc'||s.includes('dp')||/^p\d/.test(s)||/^f\d/.test(s);
 }
-function isBB(r){ return /^bb$/i.test(r.trim()); }
-function isHBP(r){ return /^hbp$/i.test(r.trim()); }
-function isK(r){ const s=r.trim().toLowerCase(); return s.includes('k'); }
+function isBB(r){ return /^bb$/i.test((r||'').trim())||/^walk$/i.test((r||'').trim()); }
+function isHBP(r){ return /^hbp$/i.test((r||'').trim()); }
+function isK(r){ return (r||'').trim().toLowerCase().includes('k'); }
 
 function calcInning(inn){
-  const abs = inn.abs;
-  const pc = inn.pitchCount||0;
-  const ks = abs.filter(a=>isK(a.result)).length;
-  const hasScored = abs.some(a=>{
-    const r=a.result.toLowerCase();
+  const abs=inn.abs||[];
+  const pc=inn.pitchCount||0;
+  const ks=abs.filter(a=>isK(a.result)).length;
+  const hasScored=abs.some(a=>{
+    const r=(a.result||'').toLowerCase();
     return r.includes('hr')||r.includes('1b')||r.includes('2b')||r.includes('3b')||isBB(a.result)||isHBP(a.result);
   });
-  const shutdown = !hasScored && abs.length>0;
-  const leadoffOut = abs[0]?.leadoff==='Y';
-  const is123 = abs.length===3 && abs.every(a=>isOut(a.result));
-  const efficient = pc>0 && pc<=15;
+  const shutdown=!hasScored&&abs.length>0;
+  const leadoffOut=abs[0]?.leadoff==='Y';
+  const is123=abs.length===3&&abs.every(a=>isOut(a.result));
+  const efficient=pc>0&&pc<=15;
   let b2b=false;
-  for(let i=0;i<abs.length-1;i++){ if(isOut(abs[i].result)&&isOut(abs[i+1].result)){b2b=true;break;} }
+  for(let i=0;i<abs.length-1;i++){if(isOut(abs[i].result)&&isOut(abs[i+1].result)){b2b=true;break;}}
   let score=0;
   if(shutdown) score+=2;
   if(efficient) score+=1;
@@ -388,59 +385,57 @@ function calcInning(inn){
   if(is123) score+=1;
   score+=ks;
   if(b2b) score+=1;
-  return {score,shutdown,efficient,leadoffOut,is123,ks,b2b,pc};
+  return{score,shutdown,efficient,leadoffOut,is123,ks,b2b,pc};
 }
 
 function updateLiveScore(){
   syncInnFields();
-  const s = calcInning(game.currentInning);
-  document.getElementById('inn-score-live').textContent = s.score+' pts';
+  const s=calcInning(game.currentInning);
+  document.getElementById('inn-score-live').textContent=s.score+' pts';
 }
 
 function calcAllStats(){
-  const allInns = [...game.innings];
+  const allInns=[...game.innings];
   let fps=0,cnt11=0,win11=0,win10=0,win10d=0,a3p=0,ldY=0,ldN=0,wewin=0,freeBase=0,totalPitches=0;
   const innStats=[];
   allInns.forEach(inn=>{
     const s=calcInning(inn);
-    innStats.push({...s, num:inn.num, pitcher:inn.pitcher, notes:inn.notes, abs:inn.abs});
+    innStats.push({...s,num:inn.num,pitcher:inn.pitcher,notes:inn.notes,abs:inn.abs});
     totalPitches+=s.pc;
-    inn.abs.forEach((ab,i)=>{
+    (inn.abs||[]).forEach((ab,i)=>{
       if(ab.fps==='Y') fps++;
       if(ab.cnt11==='Y') cnt11++;
       if(ab.win11==='Y') win11++;
-      if(ab.fps==='N'&&ab.cnt11==='Y'){ win10d++; if(ab.win11==='Y') win10++; }
+      if(ab.fps==='N'&&ab.cnt11==='Y'){win10d++;if(ab.win11==='Y')win10++;}
       if(ab.a3p==='Y') a3p++;
       if(ab.wewin==='Y') wewin++;
       if(isBB(ab.result)||isHBP(ab.result)) freeBase++;
-      if(i===0){ if(ab.leadoff==='Y') ldY++; else if(ab.leadoff==='N') ldN++; }
+      if(i===0){if(ab.leadoff==='Y')ldY++;else if(ab.leadoff==='N')ldN++;}
     });
   });
-  const totalABs = allInns.reduce((s,i)=>s+i.abs.length,0);
+  const totalABs=allInns.reduce((s,i)=>s+(i.abs||[]).length,0);
   const ldDenom=ldY+ldN;
-  const avgScore = innStats.length ? innStats.reduce((s,i)=>s+i.score,0)/innStats.length : 0;
+  const avgScore=innStats.length?innStats.reduce((s,i)=>s+i.score,0)/innStats.length:0;
   const shutdownCount=innStats.filter(i=>i.shutdown).length;
   const pab=totalABs>0?(totalPitches/totalABs):0;
-  return {fps,cnt11,win11,win10,win10d,a3p,ldY,ldN,ldDenom,wewin,freeBase,totalPitches,
+  return{fps,cnt11,win11,win10,win10d,a3p,ldY,ldN,ldDenom,wewin,freeBase,totalPitches,
     totalABs,innStats,avgScore,shutdownCount,pab,numInns:allInns.length};
 }
 
 // ── END INNING ──
 function endInning(){
-  syncInnFields();
-  if(game.currentInning.abs.length===0){ showToast('Add at least one batter first'); return; }
-  const ci = {...game.currentInning};
+  const ci={...game.currentInning,abs:[...game.currentInning.abs]};
   game.innings.push(ci);
-  const s = calcInning(ci);
+  const s=calcInning(ci);
   save();
-  renderInnSummary(ci, s);
+  renderInnSummary(ci,s);
   showScreen('inn-summary');
 }
 
-function renderInnSummary(inn, s){
-  document.getElementById('is-title').textContent = 'Inning '+inn.num+' complete';
-  document.getElementById('is-next').textContent = inn.num+1;
-  const badgeHtml = [
+function renderInnSummary(inn,s){
+  document.getElementById('is-title').textContent='Inning '+inn.num+' complete';
+  document.getElementById('is-next').textContent=inn.num+1;
+  const badgeHtml=[
     s.shutdown?'<span class="badge badge-s">S shutdown</span>':'',
     s.efficient?'<span class="badge badge-t">T efficient</span>':'',
     s.leadoffOut?'<span class="badge badge-r">R leadoff out</span>':'',
@@ -448,6 +443,11 @@ function renderInnSummary(inn, s){
     s.ks>0?`<span class="badge badge-k">K ×${s.ks} strikeout</span>`:'',
     s.b2b?'<span class="badge badge-e">E back-to-back</span>':''
   ].filter(Boolean).join(' ');
+  const p=(n,d)=>d>0?Math.round(n/d*100)+'%':'—';
+  const fps=inn.abs.filter(a=>a.fps==='Y').length;
+  const a3p=inn.abs.filter(a=>a.a3p==='Y').length;
+  const ww=inn.abs.filter(a=>a.wewin==='Y').length;
+  const n=inn.abs.length;
   document.getElementById('is-content').innerHTML=`
     <div class="card" style="text-align:center;padding:24px">
       <div style="font-size:14px;color:#8e8e93;margin-bottom:4px">STR1KE score</div>
@@ -456,75 +456,65 @@ function renderInnSummary(inn, s){
       <div class="badge-row" style="margin-top:12px;justify-content:center">${badgeHtml||'<span style="color:#c7c7cc;font-size:13px">No points earned</span>'}</div>
     </div>
     <div class="card">
-      ${statRow('FPS',inn.abs.filter(a=>a.fps==='Y').length,inn.abs.length,60)}
-      ${statRow('A3P',inn.abs.filter(a=>a.a3p==='Y').length,inn.abs.length,65)}
-      ${statRow('Winning %',inn.abs.filter(a=>a.wewin==='Y').length,inn.abs.length,75)}
+      ${sRow('FPS',fps,n,60)}${sRow('A3P',a3p,n,65)}${sRow('Winning %',ww,n,75)}
       ${inn.notes?`<div style="margin-top:10px;padding-top:10px;border-top:1px solid #f2f2f7"><span style="font-size:13px;color:#8e8e93">Notes: </span><span style="font-size:14px">${inn.notes}</span></div>`:''}
     </div>`;
 }
 
+function sRow(label,n,d,goal){
+  const p=d>0?Math.round(n/d*100):null;
+  const cls=p===null?'pct-na':(p>=goal?'pct-good':'pct-bad');
+  return `<div class="stat-row"><span class="stat-label">${label}</span><span class="stat-frac">${n}/${d}</span><span class="stat-pct ${cls}">${p===null?'—':p+'%'}</span><span class="stat-goal">/${goal}%</span></div>`;
+}
+
 function startNextInning(){
-  const lastPitcher = game.innings[game.innings.length-1]?.pitcher || game.startingPitcher;
-  game.currentInning = {
-    num: game.innings.length+1,
-    pitcher: lastPitcher,
-    pitchCount: 0, abs: [], notes: ''
-  };
-  save();
-  enterInning();
+  const lastPitcher=game.innings[game.innings.length-1]?.pitcher||game.startingPitcher;
+  game.currentInning={num:game.innings.length+1,pitcher:lastPitcher,pitchCount:0,abs:[],notes:''};
+  save(); enterInning();
 }
 
 function confirmEndGame(){
   syncInnFields();
-  if(confirm('End game and view final summary?')){ showSummary(true); }
+  if(confirm('End game and view final summary?')) showSummary(true);
 }
 
 // ── SUMMARY ──
 function showSummary(final){
-  const s = calcAllStats();
-  const info = [game.opp, game.date, game.gameResult].filter(Boolean).join(' · ');
-  document.getElementById('sum-gameinfo').textContent = info;
-  document.getElementById('sum-title').textContent = final ? 'Final summary' : 'Game summary';
-  document.getElementById('sum-back-btn').style.display = final ? 'none' : '';
-
-  // metrics
-  const ag = s.avgScore.toFixed(2);
+  const s=calcAllStats();
+  const info=[game.opp,game.date,game.gameResult].filter(Boolean).join(' · ');
+  document.getElementById('sum-gameinfo').textContent=info;
+  document.getElementById('sum-title').textContent=final?'Final summary':'Game summary';
+  document.getElementById('sum-back-btn').style.display=final?'none':'';
+  const ag=s.avgScore.toFixed(2);
   document.getElementById('sum-metrics').innerHTML=`
-    <div class="metric-card"><div class="metric-label">STR1KE avg</div><div class="metric-val ${parseFloat(ag)>=4.25?'m-good':'m-bad'}">${ag}</div><div style="font-size:11px;color:#8e8e93">goal 4.25</div></div>
-    <div class="metric-card"><div class="metric-label">Total pitches</div><div class="metric-val m-neutral">${s.totalPitches}</div></div>
-    <div class="metric-card"><div class="metric-label">P / AB</div><div class="metric-val m-neutral">${s.pab.toFixed(1)}</div><div style="font-size:11px;color:#8e8e93">goal ≤4</div></div>
-    <div class="metric-card"><div class="metric-label">Shutdowns</div><div class="metric-val m-neutral">${s.shutdownCount}/${s.numInns}</div></div>`;
-
+    <div class="metric-card"><div style="font-size:12px;color:#8e8e93">STR1KE avg</div><div class="metric-val ${parseFloat(ag)>=4.25?'m-good':'m-bad'}">${ag}</div><div style="font-size:11px;color:#8e8e93">goal 4.25</div></div>
+    <div class="metric-card"><div style="font-size:12px;color:#8e8e93">Total pitches</div><div class="metric-val m-neutral">${s.totalPitches}</div></div>
+    <div class="metric-card"><div style="font-size:12px;color:#8e8e93">P / AB</div><div class="metric-val m-neutral">${s.pab.toFixed(1)}</div><div style="font-size:11px;color:#8e8e93">goal ≤4</div></div>
+    <div class="metric-card"><div style="font-size:12px;color:#8e8e93">Shutdowns</div><div class="metric-val m-neutral">${s.shutdownCount}/${s.numInns}</div></div>`;
   document.getElementById('sum-stats').innerHTML=`<h2 style="margin-bottom:12px">Stats</h2>`+
-    statRow('1st pitch strike %',s.fps,s.totalABs,60)+
-    statRow('1-0 win %',s.win10,s.win10d,60)+
-    statRow('1-1 win %',s.win11,s.cnt11,60)+
-    statRow('A3P %',s.a3p,s.totalABs,65)+
-    statRow('Leadoff out %',s.ldY,s.ldDenom,85)+
-    statRow('Winning %',s.wewin,s.totalABs,75)+
-    `<div class="stat-row"><span class="stat-label">Free 90s (BB+HBP)</span><span style="font-weight:700">${s.freeBase}</span></div>`+
+    sRow('1st pitch strike %',s.fps,s.totalABs,60)+
+    sRow('1-0 win %',s.win10,s.win10d,60)+
+    sRow('1-1 win %',s.win11,s.cnt11,60)+
+    sRow('A3P %',s.a3p,s.totalABs,65)+
+    sRow('Leadoff out %',s.ldY,s.ldDenom,85)+
+    sRow('Winning %',s.wewin,s.totalABs,75)+
+    `<div class="stat-row"><span class="stat-label">Free 90s</span><span style="font-weight:700">${s.freeBase}</span></div>`+
     `<div class="stat-row"><span class="stat-label">Free 90s / inning</span><span style="font-weight:700">${s.numInns>0?(s.freeBase/s.numInns).toFixed(1):'—'}</span></div>`;
-
   document.getElementById('sum-inn-scores').innerHTML=s.innStats.map(inn=>`
     <div class="inn-score-card">
       <div style="font-size:12px;color:#8e8e93;margin-bottom:2px">Inn ${inn.num}${inn.pitcher?' · '+inn.pitcher:''}</div>
       <div class="score-num ${inn.score>=4.25?'score-good':'score-bad'}">${inn.score}</div>
-      <div style="font-size:11px;color:#8e8e93;margin-top:2px">${inn.pc} pitches</div>
+      <div style="font-size:11px;color:#8e8e93;margin-top:2px">${inn.pc}p</div>
       <div class="badge-row">
-        ${inn.shutdown?'<span class="badge badge-s">S</span>':''}
-        ${inn.efficient?'<span class="badge badge-t">T</span>':''}
-        ${inn.leadoffOut?'<span class="badge badge-r">R</span>':''}
-        ${inn.is123?'<span class="badge badge-1">1</span>':''}
-        ${inn.ks>0?`<span class="badge badge-k">K×${inn.ks}</span>`:''}
-        ${inn.b2b?'<span class="badge badge-e">E</span>':''}
+        ${inn.shutdown?'<span class="badge badge-s">S</span>':''}${inn.efficient?'<span class="badge badge-t">T</span>':''}
+        ${inn.leadoffOut?'<span class="badge badge-r">R</span>':''}${inn.is123?'<span class="badge badge-1">1</span>':''}
+        ${inn.ks>0?`<span class="badge badge-k">K×${inn.ks}</span>`:''}${inn.b2b?'<span class="badge badge-e">E</span>':''}
       </div>
     </div>`).join('');
-
-  // inning history accordion
   document.getElementById('sum-inn-history').innerHTML=`<h2 style="margin-bottom:10px">Inning details</h2>`+
     s.innStats.map(inn=>`
       <div class="hist-card">
-        <div class="hist-header" onclick="toggleHist(this)">
+        <div class="hist-header" onclick="this.nextElementSibling.classList.toggle('open')">
           <span style="font-weight:700;font-size:16px">Inning ${inn.num}</span>
           ${inn.pitcher?`<span class="pill">${inn.pitcher}</span>`:''}
           <span class="pill ${inn.score>=4.25?'pill-blue':''}">${inn.score} pts</span>
@@ -532,87 +522,39 @@ function showSummary(final){
           <span style="margin-left:auto;color:#c7c7cc;font-size:18px">▾</span>
         </div>
         <div class="hist-body">
-          ${inn.abs.map((ab,i)=>`<div style="display:flex;gap:8px;padding:6px 0;border-bottom:1px solid #f2f2f7;font-size:14px;align-items:center;flex-wrap:wrap">
-            <span style="color:#8e8e93;min-width:24px">${i+1}</span>
-            ${abTag('FPS',ab.fps)}${abTag('1-1C',ab.cnt11)}${abTag('1-1W',ab.win11)}${abTag('A3P',ab.a3p)}
-            ${i===0?abTag('Ld',ab.leadoff):''}${abTag('Win',ab.wewin)}
+          ${(inn.abs||[]).map((ab,i)=>`<div style="display:flex;gap:6px;padding:6px 0;border-bottom:1px solid #f2f2f7;font-size:13px;align-items:center;flex-wrap:wrap">
+            <span style="color:#8e8e93;min-width:20px">${i+1}</span>
+            ${abTag('FPS',ab.fps)}${abTag('1-1C',ab.cnt11)}
+            ${ab.cnt11==='N'?'<span style="font-size:11px;color:#c7c7cc;text-decoration:line-through">1-1W</span>':abTag('1-1W',ab.win11)}
+            ${abTag('A3P',ab.a3p)}${i===0?abTag('Ld',ab.leadoff):''}${abTag('Win',ab.wewin)}
             <span style="margin-left:auto;font-weight:600">${ab.result||'—'}</span>
           </div>`).join('')}
-          ${inn.notes?`<div style="padding:10px 0;font-size:14px;color:#6e6e73"><em>Notes: ${inn.notes}</em></div>`:''}
+          ${inn.notes?`<div style="padding:10px 0;font-size:14px;color:#6e6e73"><em>${inn.notes}</em></div>`:''}
         </div>
       </div>`).join('');
-
-  // game result edit if not set
-  document.getElementById('sum-game-result-edit').innerHTML = `
-    <div class="card">
-      <label>Game result</label>
+  document.getElementById('sum-game-result-edit').innerHTML=`
+    <div class="card"><label>Game result</label>
       <div style="display:flex;gap:8px">
         <input type="text" id="gr-input" value="${game.gameResult}" placeholder="W 5-2" style="flex:1">
         <button class="btn btn-gray btn-sm" onclick="saveGameResult()">Save</button>
       </div>
     </div>`;
-
   showScreen('summary');
 }
 
-function abTag(label, val){
-  if(val===null||val===undefined) return `<span style="background:#f2f2f7;border-radius:5px;padding:2px 6px;font-size:12px;color:#c7c7cc">${label}?</span>`;
+function abTag(label,val){
+  if(val===null||val===undefined) return `<span style="background:#f2f2f7;border-radius:5px;padding:2px 5px;font-size:11px;color:#c7c7cc">${label}?</span>`;
   const good=val==='Y';
-  return `<span style="background:${good?'#d4f1df':'#ffdede'};color:${good?'#1a7a3e':'#a00'};border-radius:5px;padding:2px 6px;font-size:12px;font-weight:600">${label}:${val}</span>`;
-}
-
-function toggleHist(el){ el.nextElementSibling.classList.toggle('open'); }
-
-function statRow(label,n,d,goal){
-  const p=d>0?Math.round(n/d*100):null;
-  const cls=p===null?'pct-na':(p>=goal?'pct-good':'pct-bad');
-  return `<div class="stat-row">
-    <span class="stat-label">${label}</span>
-    <span class="stat-frac">${n}/${d}</span>
-    <span class="stat-pct ${cls}">${p===null?'—':p+'%'}</span>
-    <span class="stat-goal">/${goal}%</span>
-  </div>`;
-}
-
-function backToGame(){
-  if(game.innings.length===0){ showScreen('inning'); return; }
-  showScreen('inning');
+  return `<span style="background:${good?'#d4f1df':'#ffdede'};color:${good?'#1a7a3e':'#a00'};border-radius:5px;padding:2px 5px;font-size:11px;font-weight:600">${label}:${val}</span>`;
 }
 
 function saveGameResult(){
-  game.gameResult = document.getElementById('gr-input').value.trim();
+  game.gameResult=document.getElementById('gr-input').value.trim();
   save(); showToast('Game result saved');
 }
 
-function copyForExcel(){
-  const s=calcAllStats();
-  const p=(n,d)=>d>0?Math.round(n/d*100)+'%':'—';
-  const rows=[
-    ['Pitcher(s)', [...new Set(game.innings.map(i=>i.pitcher).filter(Boolean))].join(', ')],
-    ['Opponent',game.opp],['Date',game.date],['Game Result',game.gameResult],[],
-    ['Metric','Value','Fraction','Goal'],
-    ['Total ABs',s.totalABs],['Total Pitches',s.totalPitches],['P/AB',s.pab.toFixed(1),'','≤4'],
-    ['FPS %',p(s.fps,s.totalABs),s.fps+'/'+s.totalABs,'60%'],
-    ['1-0 Win %',p(s.win10,s.win10d),s.win10+'/'+s.win10d,'60%'],
-    ['1-1 Win %',p(s.win11,s.cnt11),s.win11+'/'+s.cnt11,'60%'],
-    ['A3P %',p(s.a3p,s.totalABs),s.a3p+'/'+s.totalABs,'65%'],
-    ['Leadoff Out %',p(s.ldY,s.ldDenom),s.ldY+'/'+s.ldDenom,'85%'],
-    ['Winning %',p(s.wewin,s.totalABs),s.wewin+'/'+s.totalABs,'75%'],
-    ['Shutdown Innings',s.shutdownCount+'/'+s.numInns],
-    ['Free 90s',s.freeBase],
-    ['Free 90s/Inn',s.numInns>0?(s.freeBase/s.numInns).toFixed(1):'—'],
-    ['STR1KE Avg',s.avgScore.toFixed(2),'','4.25'],[],
-    ['Inning','Pitcher','Score','Pitches','ABs','S','T','R','1','K','E','Notes'],
-    ...s.innStats.map(i=>[i.num,i.pitcher,i.score,i.pc,i.abs.length,
-      i.shutdown?1:0,i.efficient?1:0,i.leadoffOut?1:0,i.is123?1:0,i.ks,i.b2b?1:0,i.notes||''])
-  ];
-  navigator.clipboard.writeText(rows.map(r=>r.join('\t')).join('\n'))
-    .then(()=>showToast('Copied! Paste into Excel.'))
-    .catch(()=>showToast('Copy failed — try again'));
-}
-
 function newGame(){
-  if(!confirm('Start a new game? This will clear current game data.')) return;
+  if(!confirm('Start a new game? This clears current data.')) return;
   game={date:'',opp:'',gameResult:'',startingPitcher:'',innings:[],
     currentInning:{num:1,pitcher:'',pitchCount:0,abs:[],notes:''}};
   save();
@@ -625,14 +567,11 @@ function newGame(){
 
 // ── INIT ──
 load();
-if(game.innings.length>0 || game.currentInning.abs.length>0){
-  // resume in progress game
+if(game.innings.length>0||game.currentInning.abs.length>0||game.opp){
   document.getElementById('s-date').value=game.date;
   document.getElementById('s-opp').value=game.opp;
   document.getElementById('s-gameresult').value=game.gameResult;
   document.getElementById('s-pitcher').value=game.startingPitcher;
-  enterInning();
-} else if(game.opp){
   enterInning();
 }
 </script>
