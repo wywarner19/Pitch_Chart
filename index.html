@@ -220,8 +220,8 @@ textarea{resize:vertical;min-height:70px}
 <!-- ACTIVE INNING -->
 <div id="screen-inning" class="screen">
   <div class="top-bar">
-    <button class="btn btn-gray btn-sm" onclick="exitToHome()">Exit</button>
-    <h1 id="inn-title" style="text-align:center">Inning 1</h1>
+    <h1 id="inn-title">Inning 1</h1>
+    <span class="pill pill-blue" id="inn-score-live">0 pts</span>
     <button class="btn btn-gray btn-sm" onclick="showSummary(false)">Summary</button>
   </div>
   <div class="card" style="padding:12px 16px">
@@ -253,7 +253,6 @@ textarea{resize:vertical;min-height:70px}
   </div>
   <button class="btn btn-success btn-full" style="font-size:18px;padding:16px" onclick="endInningClick()">End inning →</button>
   <button class="btn btn-danger btn-full" style="margin-top:8px;font-size:14px" onclick="confirmEndGame()">End game &amp; view final summary</button>
-  <button class="btn btn-gray mt8" style="font-size:14px" onclick="exitToHome()">Save & Exit to Home</button>
 </div>
 
 <!-- AB EDIT MODAL -->
@@ -285,20 +284,9 @@ textarea{resize:vertical;min-height:70px}
     <div class="outcome-section"><div class="outcome-section-label">Hit</div><div class="outcome-grid cols-4"><button class="outcome-btn cat-hit" onclick="pickOutcome('1B')">1B</button><button class="outcome-btn cat-hit" onclick="pickOutcome('2B')">2B</button><button class="outcome-btn cat-hit" onclick="pickOutcome('3B')">3B</button><button class="outcome-btn cat-hit" onclick="pickOutcome('HR')">HR</button></div></div>
     <div class="outcome-section"><div class="outcome-section-label">Groundout — tap fielder</div><div id="go-pending" class="pending-label" style="display:none"></div><div class="pos-grid" id="go-pos"><button class="pos-btn" onclick="pickGO(1)">1</button><button class="pos-btn" onclick="pickGO(2)">2</button><button class="pos-btn" onclick="pickGO(3)">3</button><button class="pos-btn" onclick="pickGO(4)">4</button><button class="pos-btn" onclick="pickGO(5)">5</button><button class="pos-btn" onclick="pickGO(6)">6</button><button class="pos-btn" onclick="pickGO(7)">7</button><button class="pos-btn" onclick="pickGO(8)">8</button><button class="pos-btn" onclick="pickGO(9)">9</button></div><div id="go-second" style="display:none;margin-top:10px"><div style="font-size:12px;color:#007aff;font-weight:600;margin-bottom:6px">→ Thrown to base:</div><div class="pos-grid"><button class="pos-btn" onclick="confirmGO(1)">1</button><button class="pos-btn" onclick="confirmGO(2)">2</button><button class="pos-btn" onclick="confirmGO(3)">3</button><button class="pos-btn" onclick="confirmGO(4)">4</button><button class="pos-btn" onclick="confirmGO(5)">5</button><button class="pos-btn" onclick="confirmGO(6)">6</button><button class="pos-btn" onclick="confirmGO(7)">7</button><button class="pos-btn" onclick="confirmGO(8)">8</button><button class="pos-btn" onclick="confirmGO(9)">9</button></div></div></div>
     <div class="outcome-section"><div class="outcome-section-label">Flyout / Popup</div><div class="outcome-grid cols-2" style="margin-bottom:8px"><button class="outcome-btn cat-out" id="fo-toggle" onclick="setFlyType('F')" style="background:#007aff;color:#fff;border-color:#007aff">Flyout (F)</button><button class="outcome-btn cat-out" id="po-toggle" onclick="setFlyType('P')">Popup (P)</button></div><div class="pos-grid"><button class="pos-btn" onclick="pickFly(1)">1</button><button class="pos-btn" onclick="pickFly(2)">2</button><button class="pos-btn" onclick="pickFly(3)">3</button><button class="pos-btn" onclick="pickFly(4)">4</button><button class="pos-btn" onclick="pickFly(5)">5</button><button class="pos-btn" onclick="pickFly(6)">6</button><button class="pos-btn" onclick="pickFly(7)">7</button><button class="pos-btn" onclick="pickFly(8)">8</button><button class="pos-btn" onclick="pickFly(9)">9</button></div></div>
-<div class="outcome-section">
-  <div class="outcome-section-label">Other</div>
-  <div class="outcome-grid cols-2">
-    <button class="outcome-btn cat-out" onclick="pickOutcome('FC')">FC</button>
-    <button class="outcome-btn cat-out" onclick="pickOutcome('E')">Error</button>
-    <button class="outcome-btn cat-out" style="grid-column: span 2; margin-top: 4px;" onclick="pickOutcome('DP')">Double Play (DP)</button>
-  </div>
-</div>
-<div class="outcome-section">
-  <div class="outcome-grid">
-    <button class="outcome-btn cat-custom" onclick="openCustom()">✏️ Custom / type manually</button>
-  </div>
-</div>
-<button class="btn btn-gray" style="width:100%;margin-top:4px" onclick="closeOutcome()">Cancel</button>
+    <div class="outcome-section"><div class="outcome-section-label">Other</div><div class="outcome-grid cols-2"><button class="outcome-btn cat-out" onclick="pickOutcome('FC')">FC</button><button class="outcome-btn cat-out" onclick="pickOutcome('E')">Error</button></div></div>
+    <div class="outcome-section"><div class="outcome-grid"><button class="outcome-btn cat-custom" onclick="openCustom()">✏️ Custom / type manually</button></div></div>
+    <button class="btn btn-gray" style="width:100%;margin-top:4px" onclick="closeOutcome()">Cancel</button>
   </div>
 </div>
 
@@ -794,16 +782,8 @@ function openCustom(){
   setTimeout(()=>document.getElementById('custom-input').focus(),100);
 }
 function closeCustom(){document.getElementById('custom-modal').style.display='none';document.getElementById('outcome-modal').style.display='flex';}
-function confirmCustom() {
-  const v = document.getElementById('custom-input').value.trim();
-  if (v) {
-    pickOutcome(v);
-    // This line specifically closes the custom window
-    document.getElementById('custom-modal').style.display = 'none'; 
-  } else {
-    closeCustom();
-  }
-}
+function confirmCustom(){const v=document.getElementById('custom-input').value.trim();if(v)pickOutcome(v);else closeCustom();}
+
 // ── PITCH MODAL ──
 function endInningClick(){syncInnFields();if(game.currentInning.abs.length===0){showToast('Add at least one batter first');return;}document.getElementById('modal-pitch-input').value='';document.getElementById('pitch-modal').style.display='flex';setTimeout(()=>document.getElementById('modal-pitch-input').focus(),100);}
 function cancelPitchModal(){document.getElementById('pitch-modal').style.display='none';}
@@ -1000,17 +980,6 @@ function deleteGame(){
   if(!confirm('Delete this game permanently?'))return;
   if(viewingGameId)deleteGameById(viewingGameId);
   viewingGameId=null;renderHome();showScreen('home');
-}
-
-function exitToHome() {
-  // This captures the pitcher name and notes currently on screen
-  syncInnFields(); 
-  // This saves the data to your browser's local storage
-  saveActive(); 
-  // This updates the Home screen so the blue "Resume" banner appears
-  renderHome(); 
-  // This switches the view from the game back to the menu
-  showScreen('home'); 
 }
 
 // ── INIT ──
