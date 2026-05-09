@@ -227,11 +227,16 @@ textarea{resize:vertical;min-height:70px}
 
 <!-- INNING -->
 <div id="screen-inning" class="screen">
-  <div class="top-bar">
-    <h1 id="inn-title">Inning 1</h1>
-    <span class="pill pill-blue" id="inn-pts">0 pts</span>
-    <button class="btn btn-gray btn-sm" onclick="togglePitchPopup()">⚾ Count</button>
-    <button class="btn btn-gray btn-sm" onclick="saveAndExit()">Save &amp; Exit</button>
+  <div style="margin-bottom:16px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <h1 id="inn-title" style="flex:1;font-size:22px;font-weight:700">Inning 1</h1>
+      <span class="pill pill-blue" id="inn-pts">0 pts</span>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-gray btn-sm" style="flex:1" onclick="showSummary(false)">📊 Summary</button>
+      <button class="btn btn-gray btn-sm" style="flex:1" onclick="togglePitchPopup()">⚾ Count</button>
+      <button class="btn btn-warn btn-sm" style="flex:1" onclick="saveAndExit()">💾 Save &amp; Exit</button>
+    </div>
   </div>
 
   <div class="card" style="padding:12px 16px">
