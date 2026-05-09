@@ -286,13 +286,19 @@ textarea{resize:vertical;min-height:70px}
     <div class="outcome-section"><div class="outcome-section-label">Groundout — tap fielder</div><div id="go-pending" class="pending-label" style="display:none"></div><div class="pos-grid" id="go-pos"><button class="pos-btn" onclick="pickGO(1)">1</button><button class="pos-btn" onclick="pickGO(2)">2</button><button class="pos-btn" onclick="pickGO(3)">3</button><button class="pos-btn" onclick="pickGO(4)">4</button><button class="pos-btn" onclick="pickGO(5)">5</button><button class="pos-btn" onclick="pickGO(6)">6</button><button class="pos-btn" onclick="pickGO(7)">7</button><button class="pos-btn" onclick="pickGO(8)">8</button><button class="pos-btn" onclick="pickGO(9)">9</button></div><div id="go-second" style="display:none;margin-top:10px"><div style="font-size:12px;color:#007aff;font-weight:600;margin-bottom:6px">→ Thrown to base:</div><div class="pos-grid"><button class="pos-btn" onclick="confirmGO(1)">1</button><button class="pos-btn" onclick="confirmGO(2)">2</button><button class="pos-btn" onclick="confirmGO(3)">3</button><button class="pos-btn" onclick="confirmGO(4)">4</button><button class="pos-btn" onclick="confirmGO(5)">5</button><button class="pos-btn" onclick="confirmGO(6)">6</button><button class="pos-btn" onclick="confirmGO(7)">7</button><button class="pos-btn" onclick="confirmGO(8)">8</button><button class="pos-btn" onclick="confirmGO(9)">9</button></div></div></div>
     <div class="outcome-section"><div class="outcome-section-label">Flyout / Popup</div><div class="outcome-grid cols-2" style="margin-bottom:8px"><button class="outcome-btn cat-out" id="fo-toggle" onclick="setFlyType('F')" style="background:#007aff;color:#fff;border-color:#007aff">Flyout (F)</button><button class="outcome-btn cat-out" id="po-toggle" onclick="setFlyType('P')">Popup (P)</button></div><div class="pos-grid"><button class="pos-btn" onclick="pickFly(1)">1</button><button class="pos-btn" onclick="pickFly(2)">2</button><button class="pos-btn" onclick="pickFly(3)">3</button><button class="pos-btn" onclick="pickFly(4)">4</button><button class="pos-btn" onclick="pickFly(5)">5</button><button class="pos-btn" onclick="pickFly(6)">6</button><button class="pos-btn" onclick="pickFly(7)">7</button><button class="pos-btn" onclick="pickFly(8)">8</button><button class="pos-btn" onclick="pickFly(9)">9</button></div></div>
 <div class="outcome-section">
-    <div class="outcome-section-label">Other</div>
-    <div class="outcome-grid cols-2">
-        <button class="outcome-btn cat-out" onclick="pickOutcome('FC')">FC</button>
-        <button class="outcome-btn cat-out" onclick="pickOutcome('E')">Error</button>
-        <button class="outcome-btn cat-out" style="grid-column: span 2; margin-top: 4px;" onclick="pickOutcome('DP')">Double Play (DP)</button>
-    <div class="outcome-section"><div class="outcome-grid"><button class="outcome-btn cat-custom" onclick="openCustom()">✏️ Custom / type manually</button></div></div>
-    <button class="btn btn-gray" style="width:100%;margin-top:4px" onclick="closeOutcome()">Cancel</button>
+  <div class="outcome-section-label">Other</div>
+  <div class="outcome-grid cols-2">
+    <button class="outcome-btn cat-out" onclick="pickOutcome('FC')">FC</button>
+    <button class="outcome-btn cat-out" onclick="pickOutcome('E')">Error</button>
+    <button class="outcome-btn cat-out" style="grid-column: span 2; margin-top: 4px;" onclick="pickOutcome('DP')">Double Play (DP)</button>
+  </div>
+</div>
+<div class="outcome-section">
+  <div class="outcome-grid">
+    <button class="outcome-btn cat-custom" onclick="openCustom()">✏️ Custom / type manually</button>
+  </div>
+</div>
+<button class="btn btn-gray" style="width:100%;margin-top:4px" onclick="closeOutcome()">Cancel</button>
   </div>
 </div>
 
