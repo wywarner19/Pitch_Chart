@@ -447,6 +447,14 @@ let homeTab='games',pitcherFilter='All';
 let innEditIdx=null,ppVisible=false;
 let selectedSetupPitcher='',selectedInnPitcher='';
 
+// ── SUPABASE ──
+const SB_URL='https://enhmridgqnagwwypnayn.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVuaG1yaWRncW5hZ3d3eXBuYXluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzNjMyODgsImV4cCI6MjA5MzkzOTI4OH0.sY9BTE5fVbhDVQjCxsiRYyQTM-89EzzEtTDeLBgJBUY';
+const SB_H={'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY};
+async function sbGet(table,query=''){const r=await fetch(`${SB_URL}/rest/v1/${table}${query}`,{headers:{...SB_H,'Prefer':'return=representation'}});if(!r.ok)throw new Error(await r.text());return r.json();}
+async function sbUpsert(table,data){const r=await fetch(`${SB_URL}/rest/v1/${table}`,{method:'POST',headers:{...SB_H,'Prefer':'resolution=merge-duplicates,return=representation'},body:JSON.stringify(data)});if(!r.ok)throw new Error(await r.text());return r.json();}
+async function sbDelete(table,query){const r=await fetch(`${SB_URL}/rest/v1/${table}${query}`,{method:'DELETE',headers:SB_H});if(!r.ok)throw new Error(await r.text());}
+  
 // ── STORAGE ──
 const GKEY='pc_games_v3',AKEY='pc_active_v3',RKEY='pc_roster_v1';
 function getAll(){try{return JSON.parse(localStorage.getItem(GKEY)||'[]');}catch(e){return[];}}
@@ -456,7 +464,7 @@ function delFromHistory(id){setAll(getAll().filter(g=>g.id!==id));}
 function saveActive(){if(G)try{localStorage.setItem(AKEY,JSON.stringify(G));}catch(e){}}
 function getActive(){try{const d=localStorage.getItem(AKEY);return d?JSON.parse(d):null;}catch(e){return null;}}
 function clearActive(){try{localStorage.removeItem(AKEY);}catch(e){}}
-function getRoster(){try{return JSON.parse(localStorage.getItem(RKEY)||'[]');}catch(e){return[];}}
+async function getRoster(){try{const r=await sbGet('roster','?order=name.asc');return r.map(x=>x.name);}catch(e){return[];}}
 function saveRoster(r){try{localStorage.setItem(RKEY,JSON.stringify(r));}catch(e){}}
 
 // ── UI ──
@@ -483,28 +491,12 @@ async function renderRoster(){
     </div>`).join('');
 }
 
-function addRosterPlayer(){
-  const input=document.getElementById('roster-input');
-  const name=input.value.trim();
-  if(!name){showToast('Enter a name first');return;}
-  const roster=getRoster();
-  if(roster.some(n=>n.toLowerCase()===name.toLowerCase())){showToast('Already on roster');return;}
-  roster.push(name);
-  roster.sort((a,b)=>a.localeCompare(b));
-  saveRoster(roster);
-  input.value='';
-  renderRoster();
-  showToast(`${name} added to roster`);
-}
+async function addRosterPlayer(){const input=document.getElementById('roster-input');
+    const name=input.value.trim();if(!name){showToast('Enter a name first');return;}try{await sbUpsert('roster',{name});input.value='';await renderRoster();showToast(`${name} added`);}catch(e){showToast('Already on roster or save failed');}}
 
-function removeRosterPlayer(i){
-  const roster=getRoster();
-  const name=roster[i];
-  if(!confirm(`Remove ${name} from roster?`))return;
-  roster.splice(i,1);
-  saveRoster(roster);
-  renderRoster();
-}
+
+async function removeRosterPlayer(name){if(!confirm(`Remove ${name}?`))return;
+    try{await sbDelete('roster',`?name=eq.${encodeURIComponent(name)}`);await renderRoster();}catch(e){showToast('Remove failed');}}
 
 // ── PITCHER SELECTOR ──
 function renderPitcherGrid(containerId, selectedName, onSelect, showCustom=true){
@@ -1059,9 +1051,4 @@ function copySeasonXL(){
 }
 
 // ── INIT ──
-renderHome();
-renderRoster();
-const _a=getActive();if(_a&&_a.opp)G=_a;
-</script>
-</body>
-</html>
+(async()=>{await renderHome();await renderRoster();const _a=getActive();if(_a&&_a.opp)G=_a;})();
