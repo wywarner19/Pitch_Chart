@@ -516,7 +516,7 @@ function renderPitcherGrid(containerId, selectedName, onSelect, showCustom=true)
   let html=roster.map((name,i=>`
     <div class="pitcher-chip ${selectedName===name?'selected':''}" onclick="${onSelect}('${name.replace(/'/g,"\\'")}')">
       ${name}
-    </div>`).join('');
+    </div>`).join('');)
   if(showCustom){
     html+=`<div class="pitcher-chip custom-chip ${selectedName==='__custom__'?'selected':''}" onclick="${onSelect}('__custom__')">
       ✏️ Other…
