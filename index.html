@@ -475,8 +475,11 @@ async function renderRoster(){
   const roster=await getRoster();
   const el=document.getElementById('roster-list');
   if(!el)return;
-  if(!roster.length){el.innerHTML=`<div style="color:#c7c7cc;font-size:14px;padding:10px 0;text-align:center">No pitchers yet — add one below</div>`;return;}
-  el.innerHTML=roster.map(name,i)=>`
+  if(!roster.length){
+    el.innerHTML=`<div style="color:#c7c7cc;font-size:14px;padding:10px 0;text-align:center">No pitchers yet — add one below</div>`;
+    return;
+  }
+  el.innerHTML=roster.map((name,i)=>`
     <div class="roster-item">
       <span class="roster-name">${name}</span>
       <button class="roster-del" onclick="removeRosterPlayer(${i})">×</button>
