@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -60,7 +61,9 @@ textarea{resize:vertical;min-height:70px}
 
 /* PITCHER SELECTOR */
 .pitcher-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:12px}
+.pitcher-grid.sm{grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:6px;margin-bottom:8px}
 .pitcher-chip{border:2px solid #d1d1d6;border-radius:12px;padding:12px 10px;text-align:center;cursor:pointer;font-size:15px;font-weight:600;background:#fff;font-family:-apple-system,sans-serif;transition:all .1s;color:#1c1c1e}
+.pitcher-grid.sm .pitcher-chip{padding:8px 6px;font-size:13px;border-radius:10px}
 .pitcher-chip:active{transform:scale(.96)}
 .pitcher-chip.selected{border-color:#007aff;background:#f0f7ff;color:#007aff}
 .pitcher-chip.custom-chip{border-style:dashed;color:#8e8e93}
@@ -325,6 +328,13 @@ textarea{resize:vertical;min-height:70px}
   <div class="modal-sheet">
     <div class="sheet-title" id="edit-title">Edit AB</div>
     <div class="sheet-sub" id="edit-sub"></div>
+    <div class="ef">
+      <label>Pitcher (this AB)</label>
+      <div id="ef-pitcher-grid" class="pitcher-grid sm" style="margin-bottom:0"></div>
+      <div id="ef-pitcher-custom" style="display:none;margin-top:6px">
+        <input type="text" id="ef-pitcher-text" placeholder="Type pitcher name">
+      </div>
+    </div>
     <div class="ef"><label>First Pitch Strike</label><div class="yn-lg"><button id="ef-fps-y" onclick="ef('fps','Y')">Y</button><button id="ef-fps-n" onclick="ef('fps','N')">N</button><button id="ef-fps-c" onclick="ef('fps',null)" style="max-width:70px;font-size:13px">Clear</button></div></div>
     <div class="ef"><label>1-1 Count</label><div class="yn-lg"><button id="ef-c11-y" onclick="ef('cnt11','Y')">Y</button><button id="ef-c11-n" onclick="ef('cnt11','N')">N</button><button id="ef-c11-c" onclick="ef('cnt11',null)" style="max-width:70px;font-size:13px">Clear</button></div></div>
     <div class="ef" id="ef-w11-wrap"><label>1-1 Win</label><div class="yn-lg" id="ef-w11-btns"><button id="ef-w11-y" onclick="ef('win11','Y')">Y</button><button id="ef-w11-n" onclick="ef('win11','N')">N</button><button id="ef-w11-c" onclick="ef('win11',null)" style="max-width:70px;font-size:13px">Clear</button></div><div id="ef-w11-na" style="display:none;color:#c7c7cc;font-size:14px;text-decoration:line-through;padding:8px 0">N/A — 1-1 Count is No</div></div>
@@ -338,10 +348,10 @@ textarea{resize:vertical;min-height:70px}
 
 <!-- INNING EDIT -->
 <div id="ov-inn-edit" class="modal-overlay center" onclick="outsideInnEdit(event)">
-  <div class="modal-box">
+  <div class="modal-box" style="max-width:440px">
     <h2 id="inn-edit-title">Edit Inning</h2>
-    <p style="margin-bottom:12px">Pitch count for this inning</p>
-    <input class="modal-input" type="number" id="inn-edit-pc" placeholder="0" min="0">
+    <p style="margin-bottom:12px">Pitch count(s) for this inning</p>
+    <div id="inn-edit-pc-wrap" style="margin-bottom:12px"></div>
     <div style="text-align:left;margin-bottom:12px"><label>Notes</label><textarea id="inn-edit-notes" style="min-height:60px" placeholder="Coaching notes…"></textarea></div>
     <div class="mbtn-row"><button class="btn btn-gray" onclick="hideOv('ov-inn-edit')">Cancel</button><button class="btn btn-success" onclick="saveInnEdit()">Save</button></div>
   </div>
@@ -382,11 +392,11 @@ textarea{resize:vertical;min-height:70px}
 
 <!-- PITCH COUNT MODAL -->
 <div id="ov-pitch" class="modal-overlay center">
-  <div class="modal-box">
-    <h2>Pitch count</h2>
-    <p>How many pitches this inning?</p>
-    <input class="modal-input" type="number" id="pitch-in" placeholder="0" min="0">
-    <div class="mbtn-row"><button class="btn btn-gray" onclick="hideOv('ov-pitch')">Cancel</button><button class="btn btn-success" onclick="confirmPitch()">End inning →</button></div>
+  <div class="modal-box" style="max-width:440px">
+    <h2>Pitch counts</h2>
+    <p id="pitch-modal-sub">How many pitches this inning?</p>
+    <div id="pitch-inputs-wrap"></div>
+    <div class="mbtn-row" style="margin-top:4px"><button class="btn btn-gray" onclick="hideOv('ov-pitch')">Cancel</button><button class="btn btn-success" onclick="confirmPitch()">End inning →</button></div>
   </div>
 </div>
 
@@ -771,7 +781,7 @@ function renderABs(){
       <td>${isLead?yn(i,'leadoff',ab.leadoff):'<div class="yn-dash">—</div>'}</td>
       <td>${yn(i,'wewin',ab.wewin)}</td>
       <td>
-        <div style="font-size:11px;color:#8e8e93;line-height:1.1;margin-bottom:3px">${pName}</div>
+        <button style="font-size:11px;color:#3730a3;background:#eef2ff;border:none;border-radius:5px;padding:2px 6px;cursor:pointer;margin-bottom:3px;display:block;width:100%;text-align:left;font-weight:600" onclick="openEdit(-1,${i})">${pName}</button>
         <button class="result-btn ${rv?'has-val':''}" onclick="openOutcome(${i})">${rv||'Tap…'}</button>
       </td>      <td><button class="del-btn" onclick="delAB(${i})">×</button></td>
     </tr>`;
@@ -790,7 +800,42 @@ function openEdit(innIdx,abIdx){
   document.getElementById('edit-title').textContent=`Edit AB ${rn} (${orderNum(rn)})`;
   document.getElementById('edit-sub').textContent=innIdx===-1?`Inning ${G.currentInning.num}`:`Inning ${G.innings[innIdx].num}`;
   document.getElementById('ef-ld-wrap').style.display=abIdx===0?'block':'none';
+  renderEditPitcherGrid(ab.pitcher||G.currentInning.pitcher||'');
   refreshEdit(ab);showOv('ov-edit');
+}
+
+function renderEditPitcherGrid(currentPitcher){
+  const roster=getRoster();
+  const el=document.getElementById('ef-pitcher-grid');
+  el.innerHTML=roster.map(n=>`<div class="pitcher-chip ${currentPitcher===n?'selected':''}" onclick="efPitcher('${n.replace(/'/g,"\\'")}')"> ${n}</div>`).join('')
+    +`<div class="pitcher-chip custom-chip ${currentPitcher==='__custom__'||(!roster.includes(currentPitcher)&&currentPitcher)?'selected':''}" onclick="efPitcher('__custom__')">✏️ Other…</div>`;
+  const customWrap=document.getElementById('ef-pitcher-custom');
+  const isCustom=currentPitcher&&!roster.includes(currentPitcher);
+  customWrap.style.display=isCustom?'block':'none';
+  document.getElementById('ef-pitcher-text').value=isCustom?currentPitcher:'';
+}
+
+function efPitcher(name){
+  const roster=getRoster();
+  const el=document.getElementById('ef-pitcher-grid');
+  const customWrap=document.getElementById('ef-pitcher-custom');
+  el.innerHTML=roster.map(n=>`<div class="pitcher-chip ${name===n?'selected':''}" onclick="efPitcher('${n.replace(/'/g,"\\'")}')"> ${n}</div>`).join('')
+    +`<div class="pitcher-chip custom-chip ${name==='__custom__'?'selected':''}" onclick="efPitcher('__custom__')">✏️ Other…</div>`;
+  customWrap.style.display=name==='__custom__'?'block':'none';
+  if(name==='__custom__'){setTimeout(()=>document.getElementById('ef-pitcher-text').focus(),50);return;}
+  // Save immediately to the AB
+  const abs=editInn===-1?G.currentInning.abs:G.innings[editInn].abs;
+  abs[editAb].pitcher=name;
+  saveActive();if(editInn===-1){renderABs();updatePts();}
+}
+
+function getEditPitcher(){
+  const roster=getRoster();
+  const chips=document.querySelectorAll('#ef-pitcher-grid .pitcher-chip.selected');
+  if(!chips.length)return '';
+  const txt=chips[0].textContent.trim();
+  if(txt==='✏️ Other…')return document.getElementById('ef-pitcher-text').value.trim();
+  return txt;
 }
 function refreshEdit(ab){
   eb('ef-fps-y','ef-fps-n','ef-fps-c',ab.fps);
@@ -810,13 +855,59 @@ function ef(field,val){
   saveActive();if(editInn===-1){renderABs();updatePts();}refreshEdit(ab);
 }
 function delEditAB(){if(!confirm('Delete this AB?'))return;const abs=editInn===-1?G.currentInning.abs:G.innings[editInn].abs;abs.splice(editAb,1);saveActive();if(editInn===-1){renderABs();updatePts();}closeEdit();}
-function closeEdit(){hideOv('ov-edit');editInn=null;editAb=null;}
+function closeEdit(){
+  // Commit custom pitcher text if visible
+  const customWrap=document.getElementById('ef-pitcher-custom');
+  if(customWrap&&customWrap.style.display!=='none'){
+    const name=document.getElementById('ef-pitcher-text').value.trim();
+    if(name&&editInn!==null&&editAb!==null){
+      const abs=editInn===-1?G.currentInning.abs:G.innings[editInn].abs;
+      if(abs[editAb])abs[editAb].pitcher=name;
+      saveActive();if(editInn===-1){renderABs();updatePts();}
+    }
+  }
+  hideOv('ov-edit');editInn=null;editAb=null;
+}
 function outsideEdit(e){if(e.target.id==='ov-edit')closeEdit();}
 function openOutcomeFromEdit(){fromEdit=true;hideOv('ov-edit');activeAb=editInn===-1?editAb:null;resetOutcome();document.getElementById('oc-sub').textContent='Changing result…';showOv('ov-outcome');}
 
 // ── INNING EDIT ──
-function openInnEdit(innIdx){innEditIdx=innIdx;const inn=G.innings[innIdx];document.getElementById('inn-edit-title').textContent=`Edit Inning ${inn.num}`;document.getElementById('inn-edit-pc').value=inn.pitchCount||'';document.getElementById('inn-edit-notes').value=inn.notes||'';showOv('ov-inn-edit');}
-function saveInnEdit(){G.innings[innEditIdx].pitchCount=parseInt(document.getElementById('inn-edit-pc').value)||0;G.innings[innEditIdx].notes=document.getElementById('inn-edit-notes').value.trim();saveActive();hideOv('ov-inn-edit');showToast('Inning updated');}
+function openInnEdit(innIdx){
+  innEditIdx=innIdx;
+  const inn=G.innings[innIdx];
+  document.getElementById('inn-edit-title').textContent=`Edit Inning ${inn.num}`;
+  document.getElementById('inn-edit-notes').value=inn.notes||'';
+  
+  // Build pitcher list from AB-level data
+  const pitcherNames=[...new Set((inn.abs||[]).map(ab=>ab.pitcher||inn.pitcher||'').filter(Boolean))];
+  const pcWrap=document.getElementById('inn-edit-pc-wrap');
+  
+  if(pitcherNames.length<=1){
+    pcWrap.innerHTML=`<input class="modal-input" type="number" id="inn-edit-pc-0" data-pitcher="${pitcherNames[0]||''}" placeholder="0" min="0" value="${inn.pitchCount||''}">`;
+  } else {
+    pcWrap.innerHTML=pitcherNames.map((p,i)=>`
+      <div style="margin-bottom:10px;text-align:left">
+        <label style="font-size:13px;font-weight:600;color:#6e6e73;margin-bottom:4px;display:block">${p}</label>
+        <input class="modal-input" type="number" id="inn-edit-pc-${i}" data-pitcher="${p}" placeholder="0" min="0" style="font-size:22px" value="${inn.pitcherCounts?.(p)||''}">
+      </div>`).join('');
+  }
+  showOv('ov-inn-edit');
+}
+
+function saveInnEdit(){
+  const inputs=document.querySelectorAll('#inn-edit-pc-wrap input[type=number]');
+  if(inputs.length===1){
+    G.innings[innEditIdx].pitchCount=parseInt(inputs[0].value)||0;
+    G.innings[innEditIdx].pitcherCounts=null;
+  } else {
+    const counts={};let total=0;
+    inputs.forEach(inp=>{const p=inp.dataset.pitcher;const v=parseInt(inp.value)||0;counts[p]=v;total+=v;});
+    G.innings[innEditIdx].pitchCount=total;
+    G.innings[innEditIdx].pitcherCounts=counts;
+  }
+  G.innings[innEditIdx].notes=document.getElementById('inn-edit-notes').value.trim();
+  saveActive();hideOv('ov-inn-edit');showToast('Inning updated');
+}
 function outsideInnEdit(e){if(e.target.id==='ov-inn-edit')hideOv('ov-inn-edit');}
 
 // ── OUTCOME ──
@@ -842,8 +933,56 @@ function outsideCustom(e){if(e.target.id==='ov-custom')closeCustom();}
 function confirmCustom(){const v=document.getElementById('cust-in').value.trim();if(!v){showToast('Please enter a result');return;}hideOv('ov-custom');pick(v);}
 
 // ── PITCH MODAL ──
-function endInningClick(){syncInn();if(!G.currentInning.abs.length){showToast('Add at least one batter first');return;}document.getElementById('pitch-in').value=G.currentInning.pitchCount||'';showOv('ov-pitch');setTimeout(()=>document.getElementById('pitch-in').focus(),100);}
-function confirmPitch(){G.currentInning.pitchCount=parseInt(document.getElementById('pitch-in').value)||0;hideOv('ov-pitch');endInning();}
+function endInningClick(){
+  syncInn();
+  if(!G.currentInning.abs.length){showToast('Add at least one batter first');return;}
+  
+  // Find distinct pitchers in this inning from AB-level data
+  const abs=G.currentInning.abs;
+  const pitcherNames=[...new Set(abs.map(ab=>ab.pitcher||G.currentInning.pitcher||'').filter(Boolean))];
+  
+  const wrap=document.getElementById('pitch-inputs-wrap');
+  const sub=document.getElementById('pitch-modal-sub');
+  
+  if(pitcherNames.length<=1){
+    // Single pitcher — simple single input
+    const name=pitcherNames[0]||'';
+    sub.textContent='How many pitches this inning?';
+    wrap.innerHTML=`<input class="modal-input" type="number" id="pitch-in-0" data-pitcher="${name}" placeholder="0" min="0" value="${G.currentInning.pitchCount||''}">`;
+    setTimeout(()=>document.getElementById('pitch-in-0').focus(),100);
+  } else {
+    // Multiple pitchers — one input each
+    sub.textContent='Enter pitch count for each pitcher:';
+    wrap.innerHTML=pitcherNames.map((p,i)=>`
+      <div style="margin-bottom:14px;text-align:left">
+        <label style="font-size:13px;font-weight:600;color:#6e6e73;margin-bottom:6px;display:block">${p}</label>
+        <input class="modal-input" type="number" id="pitch-in-${i}" data-pitcher="${p}" placeholder="0" min="0" style="font-size:22px">
+      </div>`).join('');
+    setTimeout(()=>document.getElementById('pitch-in-0').focus(),100);
+  }
+  showOv('ov-pitch');
+}
+
+function confirmPitch(){
+  const inputs=document.querySelectorAll('#pitch-inputs-wrap input[type=number]');
+  if(inputs.length===1){
+    G.currentInning.pitchCount=parseInt(inputs[0].value)||0;
+    G.currentInning.pitcherCounts=null; // single pitcher, no split needed
+  } else {
+    // Store per-pitcher counts and total
+    const counts={};
+    let total=0;
+    inputs.forEach(inp=>{
+      const p=inp.dataset.pitcher;
+      const v=parseInt(inp.value)||0;
+      counts[p]=v;
+      total+=v;
+    });
+    G.currentInning.pitchCount=total;
+    G.currentInning.pitcherCounts=counts;
+  }
+  hideOv('ov-pitch');endInning();
+}
 
 // ── CALC ──
 function isOut(r){const s=(r||'').trim().toLowerCase();if(!s)return false;return /backwards k|frontwards k|\bk\b/.test(s)||/^\d-\d/.test(s)||/^[fp]\d/.test(s)||/^e\d?$/.test(s)||s==='fc'||s==='dp'||s.includes('dp');}
@@ -870,7 +1009,11 @@ function calcGame(g){
   let fps=0,c11=0,w11=0,w10=0,w10d=0,a3p=0,ldY=0,ldN=0,ww=0,free=0,tp=0;
   const iStats=[];
   inns.forEach(inn=>{
-    const s=calcInn(inn);iStats.push({...s,num:inn.num,pitcher:inn.pitcher,notes:inn.notes,abs:inn.abs});
+    const s=calcInn(inn);
+    // Build distinct pitcher list from AB-level data, falling back to inn.pitcher
+    const pitcherSet=[...new Set((inn.abs||[]).map(ab=>ab.pitcher||inn.pitcher||'').filter(Boolean))];
+    const pitcherLabel=pitcherSet.join(' / ')||inn.pitcher||'';
+    iStats.push({...s,num:inn.num,pitcher:pitcherLabel,pitchers:pitcherSet,notes:inn.notes,abs:inn.abs});
     tp+=s.pc;
     (inn.abs||[]).forEach((ab,i)=>{
       if(ab.fps==='Y')fps++;if(ab.cnt11==='Y')c11++;if(ab.win11==='Y')w11++;
@@ -1103,12 +1246,21 @@ function calcSeason(name,games){
       gni++;
       ni++;
 
-      // Inning score/pitches still inning-level in current model
+      // Inning score/pitches: use per-pitcher count if available, else split evenly
       const s=calcInn(inn);
       scores.push({score:s.score,opp:g.opp,inn:inn.num});
       gsc.push(s.score);
       if(s.shutdown) shut++;
-      tp+=s.pc; gp+=s.pc;
+      // Determine pitches for this pitcher in this inning
+      let pitchesThisInn=0;
+      if(inn.pitcherCounts&&inn.pitcherCounts[name]!==undefined){
+        pitchesThisInn=inn.pitcherCounts[name];
+      } else {
+        // Split total evenly among pitchers who appeared
+        const innPitchers=[...new Set((inn.abs||[]).map(ab=>ab.pitcher||inn.pitcher||'').filter(Boolean))];
+        pitchesThisInn=innPitchers.length>0?Math.round((inn.pitchCount||0)/innPitchers.length):(inn.pitchCount||0);
+      }
+      tp+=pitchesThisInn; gp+=pitchesThisInn;
 
       absForPitcher.forEach((ab,i)=>{
         ta++; gab++;
