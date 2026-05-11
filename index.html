@@ -477,10 +477,10 @@ async function renderRoster(){
   const el=document.getElementById('roster-list');
   if(!el)return;
   if(!roster.length){el.innerHTML=`<div style="color:#c7c7cc;font-size:14px;padding:10px 0;text-align:center">No pitchers yet — add one below</div>`;return;}
-  el.innerHTML=roster.map(name=>`
+  el.innerHTML=roster.map(name,i=>`
     <div class="roster-item">
       <span class="roster-name">${name}</span>
-      <button class="roster-del" onclick="removeRosterPlayer('${name.replace(/'/g,"\\'")}')">×</button>
+      <button class="roster-del" onclick="removeRosterPlayer(${i})">×</button>
     </div>`).join('');
 }
 
@@ -533,7 +533,7 @@ function selectSetupPitcher(name){
   // re-render with correct selection
   const roster=getRoster();
   const el=document.getElementById('setup-pitcher-grid');
-  el.innerHTML=roster.map(n=>`<div class="pitcher-chip ${selectedSetupPitcher===n?'selected':''}" onclick="selectSetupPitcher('${n.replace(/'/g,"\\'")}'">${n}</div>`).join('')
+  el.innerHTML=roster.map(n=>`<div class="pitcher-chip ${selectedSetupPitcher===n?'selected':''}" onclick="selectSetupPitcher('${n.replace(/'/g,"\\'")}')">${n}</div>`).join('')
     +`<div class="pitcher-chip custom-chip ${selectedSetupPitcher==='__custom__'?'selected':''}" onclick="selectSetupPitcher('__custom__')">✏️ Other…</div>`;
   document.getElementById('s-pitcher-custom')&&document.getElementById('s-pitcher-custom').remove();
   if(name==='__custom__'){
@@ -546,7 +546,7 @@ function selectInnPitcher(name){
   selectedInnPitcher=name;
   const roster=getRoster();
   const el=document.getElementById('inn-pitcher-grid');
-  el.innerHTML=roster.map(n=>`<div class="pitcher-chip ${selectedInnPitcher===n?'selected':''}" onclick="selectInnPitcher('${n.replace(/'/g,"\\'")}'">${n}</div>`).join('')
+  el.innerHTML=roster.map(n=>`<div class="pitcher-chip ${selectedInnPitcher===n?'selected':''}" onclick="selectInnPitcher('${n.replace(/'/g,"\\'")}')">${n}</div>`).join('')
     +`<div class="pitcher-chip custom-chip ${selectedInnPitcher==='__custom__'?'selected':''}" onclick="selectInnPitcher('__custom__')">✏️ Other…</div>`;
   const customWrap=document.getElementById('inn-pitcher-custom');
   customWrap.style.display=name==='__custom__'?'block':'none';
@@ -622,7 +622,7 @@ function goSetup(){
   selectedSetupPitcher='';
   const roster=getRoster();
   const el=document.getElementById('setup-pitcher-grid');
-  el.innerHTML=roster.map(n=>`<div class="pitcher-chip" onclick="selectSetupPitcher('${n.replace(/'/g,"\\'")}'">${n}</div>`).join('')
+  el.innerHTML=roster.map(n=>`<div class="pitcher-chip" onclick="selectSetupPitcher('${n.replace(/'/g,"\\'")}')">${n}</div>`).join('')
     +`<div class="pitcher-chip custom-chip" onclick="selectSetupPitcher('__custom__')">✏️ Other…</div>`;
   showScreen('screen-setup');
 }
@@ -654,7 +654,7 @@ function enterInning(){
   selectedInnPitcher=ci.pitcher||'';
   const roster=getRoster();
   const el=document.getElementById('inn-pitcher-grid');
-  el.innerHTML=roster.map(n=>`<div class="pitcher-chip ${selectedInnPitcher===n?'selected':''}" onclick="selectInnPitcher('${n.replace(/'/g,"\\'")}'">${n}</div>`).join('')
+  el.innerHTML=roster.map(n=>`<div class="pitcher-chip ${selectedInnPitcher===n?'selected':''}" onclick="selectInnPitcher('${n.replace(/'/g,"\\'")}')">${n}</div>`).join('')
     +`<div class="pitcher-chip custom-chip ${selectedInnPitcher==='__custom__'?'selected':''}" onclick="selectInnPitcher('__custom__')">✏️ Other…</div>`;
   const customWrap=document.getElementById('inn-pitcher-custom');
   customWrap.style.display=selectedInnPitcher&&!roster.includes(selectedInnPitcher)&&selectedInnPitcher!==''?'block':'none';
