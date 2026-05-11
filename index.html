@@ -166,7 +166,7 @@ textarea{resize:vertical;min-height:70px}
 .stat-p{font-weight:700;font-size:15px;min-width:52px;text-align:right;padding:4px 10px;border-radius:8px}
 .stat-g{font-size:12px;color:#8e8e93;min-width:40px;text-align:right;margin-left:4px}
 .pg{background:#d4f1df;color:#1a7a3e}.pb{background:#ffdede;color:#a00}.pn{background:#f2f2f7;color:#6e6e73}
-.mg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.mg{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:14px}
 .mc{background:#fff;border-radius:12px;padding:14px;text-align:center;border:1px solid #e5e5ea}
 .mv{font-size:28px;font-weight:800;margin-top:2px}
 .vg{color:#34c759}.vb{color:#ff3b30}.vn{color:#1c1c1e}
@@ -272,7 +272,8 @@ textarea{resize:vertical;min-height:70px}
     <div style="display:flex;gap:8px">
       <button class="btn btn-gray btn-sm" style="flex:1" onclick="showSummary(false)">📊 Summary</button>
       <button class="btn btn-gray btn-sm" style="flex:1" onclick="togglePitchPopup()">⚾ Count</button>
-      <button class="btn btn-warn btn-sm" style="flex:1" onclick="saveAndExit()">💾 Save &amp; Exit</button>
+      <button class="btn btn-danger btn-sm" style="flex:1" onclick="toggleRunPopup()">🏃 <span id="inn-runs-badge">0</span>R</button>
+      <button class="btn btn-warn btn-sm" style="flex:1" onclick="saveAndExit()">💾 Save</button>
     </div>
   </div>
 
@@ -320,6 +321,29 @@ textarea{resize:vertical;min-height:70px}
   <div class="pp-btns">
     <button class="pp-btn" onclick="adjPP(1)">+</button>
     <button class="pp-btn" onclick="adjPP(-1)">−</button>
+  </div>
+</div>
+
+<!-- LIVE RUNS COUNTER -->
+<div class="pitch-popup" id="run-popup" style="bottom:170px;background:#a00">
+  <button class="pp-close" onclick="toggleRunPopup()">✕</button>
+  <div style="font-size:13px;font-weight:700;opacity:.8">R</div>
+  <div class="pp-num" id="rp-num">0</div>
+  <div class="pp-btns">
+    <button class="pp-btn" onclick="adjRuns(1)">+</button>
+    <button class="pp-btn" onclick="adjRuns(-1)">−</button>
+  </div>
+</div>
+
+<!-- RBI STEP -->
+<div id="ov-rbi" class="modal-overlay center" style="z-index:250">
+  <div class="modal-box">
+    <h2 style="margin-bottom:6px">Run scored?</h2>
+    <p id="rbi-result-disp" style="font-size:18px;font-weight:700;color:#007aff;margin-bottom:16px"></p>
+    <div class="mbtn-row">
+      <button class="btn btn-success" style="flex:2" onclick="confirmRBI(true)">✅ Yes — add (RBI)</button>
+      <button class="btn btn-gray" style="flex:1" onclick="confirmRBI(false)">No</button>
+    </div>
   </div>
 </div>
 
@@ -374,7 +398,39 @@ textarea{resize:vertical;min-height:70px}
       <div class="og c2" style="margin-bottom:8px"><button class="ob co" id="fo-tog" onclick="setFly('F')" style="background:#007aff;color:#fff;border-color:#007aff">Flyout (F)</button><button class="ob co" id="po-tog" onclick="setFly('P')">Popup (P)</button></div>
       <div class="pos-grid"><button class="pos-btn" onclick="pickFly(1)">1</button><button class="pos-btn" onclick="pickFly(2)">2</button><button class="pos-btn" onclick="pickFly(3)">3</button><button class="pos-btn" onclick="pickFly(4)">4</button><button class="pos-btn" onclick="pickFly(5)">5</button><button class="pos-btn" onclick="pickFly(6)">6</button><button class="pos-btn" onclick="pickFly(7)">7</button><button class="pos-btn" onclick="pickFly(8)">8</button><button class="pos-btn" onclick="pickFly(9)">9</button></div>
     </div>
-    <div class="os"><div class="os-lbl">Other</div><div class="og c3"><button class="ob co" onclick="pick('FC')">FC</button><button class="ob co" onclick="pick('E')">Error</button><button class="ob co" onclick="pick('DP')">DP</button></div></div>
+    <div class="os"><div class="os-lbl">Double play — tap first fielder</div>
+      <div id="dp-pend" class="pending-lbl"></div>
+      <div class="pos-grid" id="dp-pos">
+        <button class="pos-btn" onclick="pickDP(1)">1</button><button class="pos-btn" onclick="pickDP(2)">2</button><button class="pos-btn" onclick="pickDP(3)">3</button><button class="pos-btn" onclick="pickDP(4)">4</button><button class="pos-btn" onclick="pickDP(5)">5</button><button class="pos-btn" onclick="pickDP(6)">6</button><button class="pos-btn" onclick="pickDP(7)">7</button><button class="pos-btn" onclick="pickDP(8)">8</button><button class="pos-btn" onclick="pickDP(9)">9</button>
+        <button class="pos-btn" onclick="pickDPUnassisted()" style="grid-column:span 2;font-size:12px">U (unassisted)</button>
+      </div>
+      <div id="dp-2nd" style="display:none;margin-top:10px">
+        <div style="font-size:12px;color:#007aff;font-weight:600;margin-bottom:6px">→ 2nd fielder:</div>
+        <div class="pos-grid">
+          <button class="pos-btn" onclick="pickDP2(1)">1</button><button class="pos-btn" onclick="pickDP2(2)">2</button><button class="pos-btn" onclick="pickDP2(3)">3</button><button class="pos-btn" onclick="pickDP2(4)">4</button><button class="pos-btn" onclick="pickDP2(5)">5</button><button class="pos-btn" onclick="pickDP2(6)">6</button><button class="pos-btn" onclick="pickDP2(7)">7</button><button class="pos-btn" onclick="pickDP2(8)">8</button><button class="pos-btn" onclick="pickDP2(9)">9</button>
+          <button class="pos-btn" onclick="pickDP2Unassisted()" style="grid-column:span 2;font-size:12px">U (unassisted)</button>
+        </div>
+      </div>
+      <div id="dp-3rd" style="display:none;margin-top:10px">
+        <div style="font-size:12px;color:#34c759;font-weight:600;margin-bottom:6px">→ 3rd fielder (optional):</div>
+        <div class="pos-grid">
+          <button class="pos-btn" onclick="pickDP3(1)">1</button><button class="pos-btn" onclick="pickDP3(2)">2</button><button class="pos-btn" onclick="pickDP3(3)">3</button><button class="pos-btn" onclick="pickDP3(4)">4</button><button class="pos-btn" onclick="pickDP3(5)">5</button><button class="pos-btn" onclick="pickDP3(6)">6</button><button class="pos-btn" onclick="pickDP3(7)">7</button><button class="pos-btn" onclick="pickDP3(8)">8</button><button class="pos-btn" onclick="pickDP3(9)">9</button>
+        </div>
+        <button class="btn btn-gray btn-sm" style="width:100%;margin-top:6px" onclick="confirmDP()">Done (2 fielders)</button>
+      </div>
+    </div>
+    <div class="os"><div class="os-lbl">FC / Other</div><div class="og c3">
+      <button class="ob co" onclick="toggleFCPanel()">FC…</button>
+      <button class="ob co" onclick="pick('E')">Error</button>
+      <button class="ob co" onclick="pick('SAC')">SAC</button>
+    </div></div>
+    <div id="fc-pos-wrap" style="display:none;margin:-6px 0 14px">
+      <div style="font-size:11px;font-weight:700;color:#8e8e93;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">FC — tap fielder</div>
+      <div class="pos-grid">
+        <button class="pos-btn" onclick="pick('FC U1')">1</button><button class="pos-btn" onclick="pick('FC U2')">2</button><button class="pos-btn" onclick="pick('FC U3')">3</button><button class="pos-btn" onclick="pick('FC U4')">4</button><button class="pos-btn" onclick="pick('FC U5')">5</button><button class="pos-btn" onclick="pick('FC U6')">6</button><button class="pos-btn" onclick="pick('FC U7')">7</button><button class="pos-btn" onclick="pick('FC U8')">8</button><button class="pos-btn" onclick="pick('FC U9')">9</button>
+        <button class="pos-btn" onclick="pick('FC')" style="grid-column:span 2;font-size:12px">FC (no pos)</button>
+      </div>
+    </div>
     <div class="os"><div class="og"><button class="ob cc" onclick="openCustom()">✏️ Custom / type manually</button></div></div>
     <button class="btn btn-gray btn-full" onclick="closeOutcome()">Cancel</button>
   </div>
@@ -454,8 +510,10 @@ textarea{resize:vertical;min-height:70px}
 let G=null,viewId=null,editInn=null,editAb=null,activeAb=null;
 let goFirst=null,flyType='F',fromEdit=false;
 let homeTab='games',pitcherFilter='All';
-let innEditIdx=null,ppVisible=false;
+let innEditIdx=null,ppVisible=false,rpVisible=false;
 let selectedSetupPitcher='',selectedInnPitcher='';
+let dpFirst=null,dpSecond=null;
+let pendingRbiResult=null;
 
 // ── STORAGE ──
 const GKEY='pc_games_v3',AKEY='pc_active_v3',RKEY='pc_roster_v1';
@@ -733,7 +791,11 @@ function enterInning(){
   const customWrap=document.getElementById('inn-pitcher-custom');
   customWrap.style.display=selectedInnPitcher&&!roster.includes(selectedInnPitcher)&&selectedInnPitcher!==''?'block':'none';
   document.getElementById('inn-pitcher-text').value=(!roster.includes(selectedInnPitcher)&&selectedInnPitcher)?selectedInnPitcher:'';
-  renderABs();updatePts();showScreen('screen-inning');
+  renderABs();updatePts();
+  const runs=G.currentInning.runsAllowed||0;
+  document.getElementById('inn-runs-badge').textContent=runs;
+  document.getElementById('rp-num').textContent=runs;
+  showScreen('screen-inning');
 }
 
 function syncInn(){
@@ -911,19 +973,74 @@ function saveInnEdit(){
 function outsideInnEdit(e){if(e.target.id==='ov-inn-edit')hideOv('ov-inn-edit');}
 
 // ── OUTCOME ──
-function resetOutcome(){goFirst=null;document.getElementById('go-2nd').style.display='none';document.getElementById('go-pend').style.display='none';document.getElementById('fo-tog').style.cssText='background:#007aff;color:#fff;border-color:#007aff';document.getElementById('po-tog').style.cssText='';flyType='F';}
+function resetOutcome(){
+  goFirst=null;dpFirst=null;dpSecond=null;
+  document.getElementById('go-2nd').style.display='none';
+  document.getElementById('go-pend').style.display='none';
+  document.getElementById('dp-2nd').style.display='none';
+  document.getElementById('dp-3rd').style.display='none';
+  document.getElementById('dp-pend').style.display='none';
+  document.getElementById('fc-pos-wrap').style.display='none';
+  document.querySelectorAll('#dp-pos .pos-btn').forEach(b=>{b.style.background='';b.style.color='';});
+  document.getElementById('fo-tog').style.cssText='background:#007aff;color:#fff;border-color:#007aff';
+  document.getElementById('po-tog').style.cssText='';
+  flyType='F';
+}
 function openOutcome(i){activeAb=i;fromEdit=false;resetOutcome();document.getElementById('oc-sub').textContent='AB #'+(i+1);showOv('ov-outcome');}
 function closeOutcome(){hideOv('ov-outcome');if(fromEdit){showOv('ov-edit');fromEdit=false;}activeAb=null;}
 function outsideOutcome(e){if(e.target.id==='ov-outcome')closeOutcome();}
+
+// Routes through RBI step
 function pick(val){
-  if(fromEdit){const abs=editInn===-1?G.currentInning.abs:G.innings[editInn].abs;abs[editAb].result=val;saveActive();if(editInn===-1){renderABs();updatePts();}refreshEdit(abs[editAb]);hideOv('ov-outcome');showOv('ov-edit');fromEdit=false;return;}
-  if(activeAb===null)return;
-  G.currentInning.abs[activeAb].result=val;saveActive();renderABs();updatePts();hideOv('ov-outcome');activeAb=null;
+  hideOv('ov-outcome');
+  hideOv('ov-custom');
+  pendingRbiResult=val;
+  document.getElementById('rbi-result-disp').textContent=val;
+  showOv('ov-rbi');
 }
+function confirmRBI(addRbi){
+  hideOv('ov-rbi');
+  const val=addRbi?pendingRbiResult+' (RBI)':pendingRbiResult;
+  pendingRbiResult=null;
+  _commitResult(val);
+}
+function _commitResult(val){
+  if(fromEdit){
+    const abs=editInn===-1?G.currentInning.abs:G.innings[editInn].abs;
+    abs[editAb].result=val;saveActive();if(editInn===-1){renderABs();updatePts();}
+    refreshEdit(abs[editAb]);showOv('ov-edit');fromEdit=false;return;
+  }
+  if(activeAb===null)return;
+  G.currentInning.abs[activeAb].result=val;saveActive();renderABs();updatePts();activeAb=null;
+}
+
+// ── DP ──
+function pickDP(p){
+  dpFirst=p;
+  document.getElementById('dp-pend').textContent=`First fielder: ${p} → 2nd fielder…`;
+  document.getElementById('dp-pend').style.display='block';
+  document.getElementById('dp-2nd').style.display='block';
+  document.querySelectorAll('#dp-pos .pos-btn').forEach((b,i)=>{b.style.background=i+1===p?'#8e8e93':'';b.style.color=i+1===p?'#fff':'';});
+}
+function pickDPUnassisted(){pick(`U${dpFirst||'3'} DP`);}
+function pickDP2(p){
+  dpSecond=p;
+  document.getElementById('dp-pend').textContent=`${dpFirst}-${p} DP → 3rd fielder (optional)`;
+  document.getElementById('dp-3rd').style.display='block';
+}
+function pickDP2Unassisted(){pick(`${dpFirst}-U${dpSecond||''} DP`);}
+function pickDP3(p){pick(`${dpFirst}-${dpSecond}-${p} DP`);}
+function confirmDP(){pick(`${dpFirst}-${dpSecond} DP`);}
+
+// ── FC ──
+function toggleFCPanel(){const w=document.getElementById('fc-pos-wrap');w.style.display=w.style.display==='none'?'block':'none';}
+
+// ── Groundout ──
 function pickGO(p){goFirst=p;document.getElementById('go-pend').textContent=`Fielded by ${p} → thrown to…`;document.getElementById('go-pend').style.display='block';document.getElementById('go-2nd').style.display='block';document.querySelectorAll('#go-pos .pos-btn').forEach((b,i)=>{b.style.background=i+1===p?'#8e8e93':'';b.style.color=i+1===p?'#fff':'';});}
 function confirmGO(p){pick(goFirst+'-'+p);}
 function setFly(t){flyType=t;document.getElementById('fo-tog').style.cssText=t==='F'?'background:#007aff;color:#fff;border-color:#007aff':'';document.getElementById('po-tog').style.cssText=t==='P'?'background:#007aff;color:#fff;border-color:#007aff':'';}
 function pickFly(p){pick(flyType+p);}
+
 function openCustom(){
   const cur=fromEdit?(editInn===-1?G.currentInning.abs[editAb]:G.innings[editInn].abs[editAb])?.result||'':(activeAb!==null?G.currentInning.abs[activeAb]?.result||'':'');
   hideOv('ov-outcome');document.getElementById('cust-in').value=cur;showOv('ov-custom');setTimeout(()=>document.getElementById('cust-in').focus(),100);
@@ -931,6 +1048,16 @@ function openCustom(){
 function closeCustom(){hideOv('ov-custom');showOv('ov-outcome');}
 function outsideCustom(e){if(e.target.id==='ov-custom')closeCustom();}
 function confirmCustom(){const v=document.getElementById('cust-in').value.trim();if(!v){showToast('Please enter a result');return;}hideOv('ov-custom');pick(v);}
+
+// ── RUNS POPUP ──
+function toggleRunPopup(){rpVisible=!rpVisible;document.getElementById('run-popup').classList.toggle('show',rpVisible);}
+function adjRuns(n){
+  if(!G)return;
+  G.currentInning.runsAllowed=Math.max(0,(G.currentInning.runsAllowed||0)+n);
+  document.getElementById('rp-num').textContent=G.currentInning.runsAllowed;
+  document.getElementById('inn-runs-badge').textContent=G.currentInning.runsAllowed;
+  saveActive();
+}
 
 // ── PITCH MODAL ──
 function endInningClick(){
@@ -985,36 +1112,37 @@ function confirmPitch(){
 }
 
 // ── CALC ──
-function isOut(r){const s=(r||'').trim().toLowerCase();if(!s)return false;return /backwards k|frontwards k|\bk\b/.test(s)||/^\d-\d/.test(s)||/^[fp]\d/.test(s)||/^e\d?$/.test(s)||s==='fc'||s==='dp'||s.includes('dp');}
-function isBB(r){return /^(bb|walk)$/i.test((r||'').trim());}
-function isHBP(r){return /^hbp$/i.test((r||'').trim());}
-function isK(r){return (r||'').toLowerCase().includes('k');}
-function isHit(r){const s=(r||'').toLowerCase();return s.includes('1b')||s.includes('2b')||s.includes('3b')||s.includes('hr');}
+function stripRbi(r){return (r||'').replace(/\s*\(RBI\)/gi,'').trim();}
+function isOut(r){const s=stripRbi(r).toLowerCase();if(!s)return false;return /backwards k|frontwards k|\bk\b/.test(s)||/^\d[-u]/.test(s)||/^u\d/.test(s)||/^[fp]\d/.test(s)||/^e\d?$/.test(s)||/^fc/.test(s)||s==='sac'||/dp$/.test(s)||s.includes('dp');}
+function isBB(r){return /^(bb|walk)$/i.test(stripRbi(r));}
+function isHBP(r){return /^hbp$/i.test(stripRbi(r));}
+function isK(r){const s=stripRbi(r).toLowerCase();return s.includes('backwards k')||s.includes('frontwards k')||/\bk\b/.test(s);}
+function isHit(r){const s=stripRbi(r).toLowerCase();return s.includes('1b')||s.includes('2b')||s.includes('3b')||s.includes('hr');}
 
 function calcInn(inn){
   const abs=inn.abs||[];const pc=inn.pitchCount||0;
   const ks=abs.filter(a=>isK(a.result)).length;
-  const hasRun=abs.some(a=>isHit(a.result)||isBB(a.result)||isHBP(a.result));
-  const shutdown=!hasRun&&abs.length>0;
+  const runsAllowed=inn.runsAllowed??null;
+  const hasReached=abs.some(a=>isHit(a.result)||isBB(a.result)||isHBP(a.result));
+  const shutdown=abs.length>0&&(runsAllowed!==null?runsAllowed===0:!hasReached);
   const leadoffOut=abs[0]?.leadoff==='Y';
   const is123=abs.length===3&&abs.every(a=>isOut(a.result));
   const efficient=pc>0&&pc<=15;
   let b2b=false;for(let i=0;i<abs.length-1;i++){if(isOut(abs[i].result)&&isOut(abs[i+1].result)){b2b=true;break;}}
   let score=0;if(shutdown)score+=2;if(efficient)score+=1;if(leadoffOut)score+=1;if(is123)score+=1;score+=ks;if(b2b)score+=1;
-  return{score,shutdown,efficient,leadoffOut,is123,ks,b2b,pc};
+  return{score,shutdown,efficient,leadoffOut,is123,ks,b2b,pc,runsAllowed:runsAllowed??0};
 }
 
 function calcGame(g){
   const inns=g.innings||[];
-  let fps=0,c11=0,w11=0,w10=0,w10d=0,a3p=0,ldY=0,ldN=0,ww=0,free=0,tp=0;
+  let fps=0,c11=0,w11=0,w10=0,w10d=0,a3p=0,ldY=0,ldN=0,ww=0,free=0,tp=0,totalRuns=0;
   const iStats=[];
   inns.forEach(inn=>{
     const s=calcInn(inn);
-    // Build distinct pitcher list from AB-level data, falling back to inn.pitcher
     const pitcherSet=[...new Set((inn.abs||[]).map(ab=>ab.pitcher||inn.pitcher||'').filter(Boolean))];
     const pitcherLabel=pitcherSet.join(' / ')||inn.pitcher||'';
     iStats.push({...s,num:inn.num,pitcher:pitcherLabel,pitchers:pitcherSet,notes:inn.notes,abs:inn.abs});
-    tp+=s.pc;
+    tp+=s.pc;totalRuns+=s.runsAllowed;
     (inn.abs||[]).forEach((ab,i)=>{
       if(ab.fps==='Y')fps++;if(ab.cnt11==='Y')c11++;if(ab.win11==='Y')w11++;
       if(ab.fps==='N'&&ab.cnt11==='Y'){w10d++;if(ab.win11==='Y')w10++;}
@@ -1026,7 +1154,7 @@ function calcGame(g){
   const ta=inns.reduce((s,i)=>s+(i.abs||[]).length,0);
   const avg=iStats.length?iStats.reduce((s,i)=>s+i.score,0)/iStats.length:0;
   const shut=iStats.filter(i=>i.shutdown).length;
-  return{fps,c11,w11,w10,w10d,a3p,ldY,ldN,ldD:ldY+ldN,ww,free,tp,ta,iStats,avg,shut,pab:ta>0?tp/ta:0,ni:inns.length};
+  return{fps,c11,w11,w10,w10d,a3p,ldY,ldN,ldD:ldY+ldN,ww,free,tp,ta,iStats,avg,shut,totalRuns,pab:ta>0?tp/ta:0,ni:inns.length};
 }
 
 // ── END INNING ──
@@ -1035,8 +1163,10 @@ function endInning(){
   ci.abs=ci.abs.map(ab=>({ ...ab, pitcher:ab.pitcher||ci.pitcher||'' }));
   const lastPitcher=ci.pitcher;
   G.innings.push(ci);
-  G.currentInning={num:G.innings.length+1,pitcher:lastPitcher,pitchCount:0,abs:[],notes:''};
+  G.currentInning={num:G.innings.length+1,pitcher:lastPitcher,pitchCount:0,runsAllowed:0,abs:[],notes:''};
   document.getElementById('pp-num').textContent='0';
+  document.getElementById('rp-num').textContent='0';
+  document.getElementById('inn-runs-badge').textContent='0';
   saveActive();const s=calcInn(ci);renderInnSum(ci,s);showScreen('screen-inn-sum');
 }
 
@@ -1049,7 +1179,7 @@ function renderInnSum(inn,s){
     <div class="card" style="text-align:center;padding:24px">
       <div style="font-size:14px;color:#8e8e93;margin-bottom:4px">STR1KE score</div>
       <div style="font-size:56px;font-weight:800;color:${s.score>=4.25?'#34c759':'#ff3b30'}">${s.score}</div>
-      <div style="font-size:13px;color:#8e8e93">goal 4.25 · ${s.pc} pitches</div>
+      <div style="font-size:13px;color:#8e8e93">goal 4.25 · ${s.pc} pitches · <strong style="color:${s.runsAllowed===0?'#34c759':'#ff3b30'}">${s.runsAllowed}R allowed</strong></div>
       <div class="br" style="margin-top:12px;justify-content:center">${bh||'<span style="color:#c7c7cc;font-size:13px">No points</span>'}</div>
     </div>
     <div class="card">${sr('FPS',f,n,60)}${sr('A3P',a,n,65)}${sr('Winning %',w,n,75)}
@@ -1129,7 +1259,8 @@ function showSumForGame(g,fromHist){
     <div class="mc"><div style="font-size:12px;color:#8e8e93">STR1KE avg</div><div class="mv ${parseFloat(ag)>=4.25?'vg':'vb'}">${ag}</div><div style="font-size:11px;color:#8e8e93">goal 4.25</div></div>
     <div class="mc"><div style="font-size:12px;color:#8e8e93">Total pitches</div><div class="mv vn">${s.tp}</div></div>
     <div class="mc"><div style="font-size:12px;color:#8e8e93">P / AB</div><div class="mv vn">${s.pab.toFixed(1)}</div><div style="font-size:11px;color:#8e8e93">goal ≤4</div></div>
-    <div class="mc"><div style="font-size:12px;color:#8e8e93">Shutdowns</div><div class="mv vn">${s.shut}/${s.ni}</div></div>`;
+    <div class="mc"><div style="font-size:12px;color:#8e8e93">Shutdowns</div><div class="mv vn">${s.shut}/${s.ni}</div></div>
+    <div class="mc"><div style="font-size:12px;color:#8e8e93">Runs allowed</div><div class="mv ${s.totalRuns===0?'vg':'vb'}">${s.totalRuns}</div></div>`;
   document.getElementById('sum-stats').innerHTML=`<h2 style="margin-bottom:12px">Stats</h2>`+
     sr('1st pitch strike %',s.fps,s.ta,60)+sr('1-0 win %',s.w10,s.w10d,60)+sr('1-1 win %',s.w11,s.c11,60)+
     sr('A3P %',s.a3p,s.ta,65)+sr('Leadoff out %',s.ldY,s.ldD,85)+sr('Winning %',s.ww,s.ta,75)+
@@ -1139,7 +1270,7 @@ function showSumForGame(g,fromHist){
     <div class="isc">
       <div style="font-size:11px;color:#8e8e93;margin-bottom:2px">Inn ${inn.num}${inn.pitcher?' · '+inn.pitcher:''}</div>
       <div class="isn ${inn.score>=4.25?'vg':'vb'}">${inn.score}</div>
-      <div style="font-size:11px;color:#8e8e93;margin-top:2px">${inn.pc}p</div>
+      <div style="font-size:11px;color:#8e8e93;margin-top:2px">${inn.pc}p · <span style="color:${inn.runsAllowed===0?'#34c759':'#ff3b30'}">${inn.runsAllowed??0}R</span></div>
       <div class="br">${inn.shutdown?'<span class="badge bs">S</span>':''}${inn.efficient?'<span class="badge bt">T</span>':''}${inn.leadoffOut?'<span class="badge br2">R</span>':''}${inn.is123?'<span class="badge b1">1</span>':''}${inn.ks>0?`<span class="badge bk">K×${inn.ks}</span>`:''}${inn.b2b?'<span class="badge be">E</span>':''}</div>
     </div>`).join('');
   let rab=0;
