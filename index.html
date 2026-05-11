@@ -529,7 +529,7 @@ function renderPitcherGrid(containerId, selectedName, onSelect, showCustom=true)
 
 function selectSetupPitcher(name){
   selectedSetupPitcher=name;
-  renderPitcherGrid('setup-pitcher-grid','setup',false);
+  renderPitcherGrid('setup-pitcher-grid', selectedSetupPitcher, 'selectSetupPitcher');
   // re-render with correct selection
   const roster=getRoster();
   const el=document.getElementById('setup-pitcher-grid');
