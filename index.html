@@ -579,9 +579,21 @@ function switchTab(t){
   if(t==='season')renderSeason();
 }
 
-function renderHome(){
+async function renderHome(){
   const all=getAll(),active=getActive();
   let h='';
+  try{
+    const inprog=await sbGet('games','?finalized=eq.false&order=created_at.desc');
+    const others=inprog.filter(r=>!active||r.id!==active.id);
+    if(others.length){
+      h+=`<div style="font-size:12px;font-weight:700;color:#8e8e93;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">In Progress (other devices)</div>`;
+      others.forEach(r=>{const g=JSON.parse(r.data);h+=`<div class="game-card" style="border-color:#ff9500;opacity:.85">
+        <div class="gc-info"><div class="gc-opp">${g.opp||'Unknown'}</div><div class="gc-sub">${g.date||''} · Inning ${g.currentInning?.num||1} · ${(g.innings||[]).length} completed inn</div></div>
+        <div class="gc-result gc-n">In Progress</div><div style="color:#c7c7cc;font-size:20px">›</div>
+      </div>`;});
+      h+=`<div style="margin-bottom:14px"></div>`;
+    }
+  }catch(e){}
   if(active&&active.opp){
     h+=`<div class="resume-card" onclick="resumeGame()">
       <div style="font-size:15px;font-weight:600;color:#007aff">▶ Resume in progress</div>
@@ -621,7 +633,7 @@ function resumeGame(){
 }
 
 function viewGame(id){const g=getAll().find(x=>x.id===id);if(!g)return;viewId=id;G=null;showSumForGame(g,true);}
-function saveAndExit(){syncInn();saveActive();showToast('Game saved');renderHome();showScreen('screen-home');}
+async function saveAndExit(){syncInn();saveActive();await sbUpsert('games',{id:G.id,data:JSON.stringify(G),opp:G.opp||'',date:G.date||'',game_result:G.gameResult||'',finalized:false});showToast('Game saved');await renderHome();showScreen('screen-home');}
 
 // ── SETUP ──
 function startGame(){
