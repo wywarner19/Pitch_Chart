@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -456,16 +457,42 @@ async function sbUpsert(table,data){const r=await fetch(`${SB_URL}/rest/v1/${tab
 async function sbDelete(table,query){const r=await fetch(`${SB_URL}/rest/v1/${table}${query}`,{method:'DELETE',headers:SB_H});if(!r.ok)throw new Error(await r.text());}
   
 // ── STORAGE ──
-const GKEY='pc_games_v3',AKEY='pc_active_v3',RKEY='pc_roster_v1';
-function getAll(){try{return JSON.parse(localStorage.getItem(GKEY)||'[]');}catch(e){return[];}}
-function setAll(a){try{localStorage.setItem(GKEY,JSON.stringify(a));}catch(e){}}
-function saveToHistory(g){const a=getAll();const i=a.findIndex(x=>x.id===g.id);if(i>=0)a[i]=g;else a.unshift(g);setAll(a);}
-function delFromHistory(id){setAll(getAll().filter(g=>g.id!==id));}
+const AKEY='pc_active_v3';
+
+// --- Supabase-backed game list ---
+let _gamesCache=null; // in-memory cache, invalidated on write
+async function getAll(){
+  if(_gamesCache)return _gamesCache;
+  try{
+    const rows=await sbGet('games','?order=created_at.desc');
+    _gamesCache=rows.map(r=>{
+      let d=r.data;
+      if(typeof d==='string')try{d=JSON.parse(d);}catch(e){}
+      return{...(d||{}),id:r.id,opp:r.opp,date:r.date,gameResult:r.game_result,finalized:r.finalized};
+    });
+    return _gamesCache;
+  }catch(e){console.error('getAll failed',e);return[];}
+}
+function _invalidateCache(){_gamesCache=null;}
+
+async function saveToHistory(g){
+  _invalidateCache();
+  const payload={id:g.id,opp:g.opp||'',date:g.date||'',game_result:g.gameResult||'',finalized:true,data:JSON.stringify(g)};
+  try{await sbUpsert('games',payload);}catch(e){console.error('saveToHistory failed',e);showToast('Cloud save failed');}
+}
+async function delFromHistory(id){
+  _invalidateCache();
+  try{await sbDelete('games',`?id=eq.${encodeURIComponent(id)}`);}catch(e){console.error('delFromHistory failed',e);}
+}
+
 function saveActive(){if(G)try{localStorage.setItem(AKEY,JSON.stringify(G));}catch(e){}}
 function getActive(){try{const d=localStorage.getItem(AKEY);return d?JSON.parse(d):null;}catch(e){return null;}}
 function clearActive(){try{localStorage.removeItem(AKEY);}catch(e){}}
-async function getRoster(){try{const r=await sbGet('roster','?order=name.asc');return r.map(x=>x.name);}catch(e){return[];}}
-function saveRoster(r){try{localStorage.setItem(RKEY,JSON.stringify(r));}catch(e){}}
+
+// --- Supabase-backed roster ---
+async function getRoster(){
+  try{const r=await sbGet('roster','?order=name.asc');return r.map(x=>x.name);}catch(e){return[];}
+}
 
 // ── UI ──
 function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);}
@@ -499,30 +526,10 @@ async function removeRosterPlayer(name){if(!confirm(`Remove ${name}?`))return;
     try{await sbDelete('roster',`?name=eq.${encodeURIComponent(name)}`);await renderRoster();}catch(e){showToast('Remove failed');}}
 
 // ── PITCHER SELECTOR ──
-function renderPitcherGrid(containerId, selectedName, onSelect, showCustom=true){
-  const roster=getRoster();
-  const el=document.getElementById(containerId);
-  let html=roster.map(name=>`
-    <div class="pitcher-chip ${selectedName===name?'selected':''}" onclick="${onSelect}('${name.replace(/'/g,"\\'")}')">
-      ${name}
-    </div>`).join('');
-  if(showCustom){
-    html+=`<div class="pitcher-chip custom-chip ${selectedName==='__custom__'?'selected':''}" onclick="${onSelect}('__custom__')">
-      ✏️ Other…
-    </div>`;
-  }
-  if(!roster.length&&!showCustom){
-    el.innerHTML=`<div style="color:#8e8e93;font-size:13px;padding:4px 0">No roster set up — <a href="#" onclick="event.preventDefault();showScreen('screen-roster')" style="color:#007aff">add pitchers</a> first.</div>`;
-    return;
-  }
-  el.innerHTML=html;
-}
 
-function selectSetupPitcher(name){
+async function selectSetupPitcher(name){
   selectedSetupPitcher=name;
-  renderPitcherGrid('setup-pitcher-grid','setup',false);
-  // re-render with correct selection
-  const roster=getRoster();
+  const roster=await getRoster();
   const el=document.getElementById('setup-pitcher-grid');
   el.innerHTML=roster.map(n=>`<div class="pitcher-chip ${selectedSetupPitcher===n?'selected':''}" onclick="selectSetupPitcher('${n.replace(/'/g,"\\'")}'">${n}</div>`).join('')
     +`<div class="pitcher-chip custom-chip ${selectedSetupPitcher==='__custom__'?'selected':''}" onclick="selectSetupPitcher('__custom__')">✏️ Other…</div>`;
@@ -533,9 +540,9 @@ function selectSetupPitcher(name){
   }
 }
 
-function selectInnPitcher(name){
+async function selectInnPitcher(name){
   selectedInnPitcher=name;
-  const roster=getRoster();
+  const roster=await getRoster();
   const el=document.getElementById('inn-pitcher-grid');
   el.innerHTML=roster.map(n=>`<div class="pitcher-chip ${selectedInnPitcher===n?'selected':''}" onclick="selectInnPitcher('${n.replace(/'/g,"\\'")}'">${n}</div>`).join('')
     +`<div class="pitcher-chip custom-chip ${selectedInnPitcher==='__custom__'?'selected':''}" onclick="selectInnPitcher('__custom__')">✏️ Other…</div>`;
@@ -568,11 +575,11 @@ function switchTab(t){
   document.getElementById('tab-season').classList.toggle('active',t==='season');
   document.getElementById('panel-games').style.display=t==='games'?'block':'none';
   document.getElementById('panel-season').style.display=t==='season'?'block':'none';
-  if(t==='season')renderSeason();
+  if(t==='season')renderSeason().catch(console.error);
 }
 
-function renderHome(){
-  const all=getAll(),active=getActive();
+async function renderHome(){
+  const all=await getAll(),active=getActive();
   let h='';
   if(active&&active.opp){
     h+=`<div class="resume-card" onclick="resumeGame()">
@@ -597,9 +604,9 @@ function renderHome(){
   document.getElementById('panel-games').innerHTML=h;
 }
 
-function goSetup(){
+async function goSetup(){
   selectedSetupPitcher='';
-  const roster=getRoster();
+  const roster=await getRoster();
   const el=document.getElementById('setup-pitcher-grid');
   el.innerHTML=roster.map(n=>`<div class="pitcher-chip" onclick="selectSetupPitcher('${n.replace(/'/g,"\\'")}'">${n}</div>`).join('')
     +`<div class="pitcher-chip custom-chip" onclick="selectSetupPitcher('__custom__')">✏️ Other…</div>`;
@@ -612,7 +619,7 @@ function resumeGame(){
   enterInning();
 }
 
-function viewGame(id){const g=getAll().find(x=>x.id===id);if(!g)return;viewId=id;G=null;showSumForGame(g,true);}
+async function viewGame(id){const all=await getAll();const g=all.find(x=>x.id===id);if(!g)return;viewId=id;G=null;showSumForGame(g,true);}
 function saveAndExit(){syncInn();saveActive();showToast('Game saved');renderHome();showScreen('screen-home');}
 
 // ── SETUP ──
@@ -624,14 +631,14 @@ function startGame(){
 }
 
 // ── INNING ──
-function enterInning(){
+async function enterInning(){
   const ci=G.currentInning;
   document.getElementById('inn-title').textContent='Inning '+ci.num;
   document.getElementById('inn-notes').value=ci.notes||'';
   document.getElementById('pp-num').textContent=ci.pitchCount||0;
   // render pitcher grid with current selection
   selectedInnPitcher=ci.pitcher||'';
-  const roster=getRoster();
+  const roster=await getRoster();
   const el=document.getElementById('inn-pitcher-grid');
   el.innerHTML=roster.map(n=>`<div class="pitcher-chip ${selectedInnPitcher===n?'selected':''}" onclick="selectInnPitcher('${n.replace(/'/g,"\\'")}'">${n}</div>`).join('')
     +`<div class="pitcher-chip custom-chip ${selectedInnPitcher==='__custom__'?'selected':''}" onclick="selectInnPitcher('__custom__')">✏️ Other…</div>`;
@@ -857,20 +864,25 @@ function buildReview(inns){
   document.getElementById('review-list').innerHTML=h;
 }
 
-function finalizeGame(){
+async function finalizeGame(){
   syncInn();
   if(G.currentInning.abs.length>0){
     if(confirm(`Include current inning (Inning ${G.currentInning.num}, ${G.currentInning.abs.length} AB) in the final summary?`)){
       G.innings.push({...G.currentInning,abs:[...G.currentInning.abs]});
     }
   }
-  saveToHistory(G);clearActive();viewId=G.id;G=null;
+  await saveToHistory(G);clearActive();viewId=G.id;G=null;
   showSummary(true);
 }
 
 // ── SUMMARY ──
 function sumBack(){if(viewId&&!G){renderHome();showScreen('screen-home');}else showScreen('screen-inning');}
-function showSummary(final){const g=final&&viewId?getAll().find(x=>x.id===viewId)||G:G;showSumForGame(g,final);}
+async function showSummary(final){
+  let g;
+  if(final&&viewId){const all=await getAll();g=all.find(x=>x.id===viewId)||G;}
+  else{g=G;}
+  showSumForGame(g,final);
+}
 
 function showSumForGame(g,fromHist){
   const s=calcGame(g);window._sg=g;window._ss=s;
@@ -939,12 +951,12 @@ function at(lbl,v){
 }
 
 // ── REOPEN ──
-function reopenGame(){
+async function reopenGame(){
   if(!confirm('Reopen this game for editing? It will move back to in-progress and be removed from finalized stats until you finalize it again.'))return;
-  const g=getAll().find(x=>x.id===viewId);if(!g)return;
+  const all=await getAll();const g=all.find(x=>x.id===viewId);if(!g)return;
   G=g;
   if(!G.currentInning){const last=G.innings[G.innings.length-1];G.currentInning={num:(last?last.num:0)+1,pitcher:last?.pitcher||'',pitchCount:0,abs:[],notes:''};}
-  delFromHistory(viewId);saveActive();viewId=null;renderHome();
+  await delFromHistory(viewId);saveActive();viewId=null;await renderHome();
   selectedInnPitcher=G.currentInning.pitcher||'';
   enterInning();
 }
@@ -958,8 +970,8 @@ function buildXL(g,s){
 function copyExcel(){const text=buildXL(window._sg,window._ss);if(navigator.clipboard?.writeText){navigator.clipboard.writeText(text).then(()=>showToast('Copied!')).catch(()=>fbCopy(text));}else fbCopy(text);}
 function fbCopy(text){const ta=document.getElementById('exp-ta');ta.value=text;document.getElementById('exp-ta-wrap').style.display='block';ta.select();try{document.execCommand('copy');showToast('Copied!');}catch(e){showToast('Select all above and copy');}}
 function dlJSON(){const g=window._sg;if(!g)return;const b=new Blob([JSON.stringify(g,null,2)],{type:'application/json'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=`pitching_${(g.opp||'game').replace(/\s/g,'_')}_${g.date||g.id}.json`;document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(u);showToast('Downloaded!');}
-function saveResult(){const v=document.getElementById('gr-in').value.trim();if(window._sg){window._sg.gameResult=v;saveToHistory(window._sg);}showToast('Saved');renderHome();}
-function deleteGame(){if(!confirm('Delete permanently?'))return;if(viewId)delFromHistory(viewId);viewId=null;renderHome();showScreen('screen-home');}
+async function saveResult(){const v=document.getElementById('gr-in').value.trim();if(window._sg){window._sg.gameResult=v;await saveToHistory(window._sg);}showToast('Saved');await renderHome();}
+async function deleteGame(){if(!confirm('Delete permanently?'))return;if(viewId)await delFromHistory(viewId);viewId=null;await renderHome();showScreen('screen-home');}
 
 // ── SEASON ──
 function calcSeason(name,games){
@@ -986,8 +998,8 @@ function calcSeason(name,games){
   return{name,ni,ta,tp,pab:ta>0?tp/ta:0,fps,c11,w11,w10,w10d,a3p,ldY,ldN,ldD:ldY+ldN,ww,free,shut,avg,scores,log};
 }
 
-function renderSeason(){
-  const all=getAll();
+async function renderSeason(){
+  const all=await getAll();
   if(!all.length){document.getElementById('panel-season').innerHTML=`<div class="empty-msg">No finalized games yet.</div>`;return;}
   const pitchers=[...new Set(all.flatMap(g=>(g.innings||[]).map(i=>i.pitcher).filter(Boolean)))].sort();
   if(!pitchers.length){document.getElementById('panel-season').innerHTML=`<div class="empty-msg">No pitcher data found.</div>`;return;}
@@ -1037,8 +1049,8 @@ function renderSeason(){
 
 function setPF(name){pitcherFilter=name;renderSeason();}
 
-function copySeasonXL(){
-  const all=getAll();
+async function copySeasonXL(){
+  const all=await getAll();
   const pitchers=[...new Set(all.flatMap(g=>(g.innings||[]).map(i=>i.pitcher).filter(Boolean)))].sort();
   const filtered=pitcherFilter==='All'?pitchers:[pitcherFilter];
   const p=(n,d)=>d>0?Math.round(n/d*100)+'%':'—';
