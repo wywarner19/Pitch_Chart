@@ -535,7 +535,7 @@ function selectSetupPitcher(name){
   // re-render with correct selection
   const roster=getRoster();
   const el=document.getElementById('setup-pitcher-grid');
-  el.innerHTML=roster.map(name,i)=>`<div class="pitcher-chip ${selectedSetupPitcher===n?'selected':''}" onclick="selectSetupPitcher('${n.replace(/'/g,"\\'")}')">${n}</div>`).join('')
+  el.innerHTML=roster.map((name,i)=>`<div class="pitcher-chip ${selectedSetupPitcher===n?'selected':''}" onclick="selectSetupPitcher('${n.replace(/'/g,"\\'")}')">${n}</div>`).join('')
     +`<div class="pitcher-chip custom-chip ${selectedSetupPitcher==='__custom__'?'selected':''}" onclick="selectSetupPitcher('__custom__')">✏️ Other…</div>`;
   document.getElementById('s-pitcher-custom')&&document.getElementById('s-pitcher-custom').remove();
   if(name==='__custom__'){
