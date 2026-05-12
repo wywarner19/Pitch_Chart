@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>Pitching Chart</title>
 <script>
 if('serviceWorker' in navigator){
@@ -611,20 +610,23 @@ function saveRoster(r){try{localStorage.setItem(RKEY,JSON.stringify(r));}catch(e
 
 // ── ROSTER (Supabase-backed) ──
 async function syncRosterFromCloud(){
+  if(!isOnline())return null;
   try{
     const rows=await sbGet('roster','?order=name.asc');
-    if(!rows||!rows.length)return;
+    if(!rows||!rows.length)return null; // got nothing — don't touch local cache
     const names=rows.map(r=>r.name);
-    saveRoster(names); // update localStorage cache
+    saveRoster(names);
     return names;
   }catch(e){console.warn('Roster sync failed:',e);return null;}
 }
 
 async function renderRoster(){
-  // Render immediately from localStorage, then refresh from Supabase
-  _renderRosterList(getRoster());
+  // Always render from localStorage first — instant, works offline
+  const local=getRoster();
+  _renderRosterList(local);
+  // Then try to refresh from cloud, but only update if we got real data back
   const fresh=await syncRosterFromCloud();
-  if(fresh)_renderRosterList(fresh);
+  if(fresh&&fresh.length)_renderRosterList(fresh);
 }
 
 function _renderRosterList(roster){
@@ -1829,23 +1831,22 @@ function copySeasonXL(){
 }
 
 // ── INIT ──
-// Show offline badge immediately if starting offline
 if(!navigator.onLine)document.getElementById('offline-badge').classList.add('show');
-// Drain any writes that queued while offline last session
 if(navigator.onLine)drainQueue();
 renderHome();
-renderRoster(); // renders local immediately, then syncs from Supabase
-syncRosterFromCloud().then(fresh=>{
-  if(fresh){
-    const active=document.getElementById('screen-inning');
-    if(active&&active.classList.contains('active')&&G){
-      const roster=getRoster();
-      const el=document.getElementById('inn-pitcher-grid');
-      if(el)el.innerHTML=roster.map(n=>`<div class="pitcher-chip ${selectedInnPitcher===n?'selected':''}" onclick="selectInnPitcher('${n.replace(/'/g,"\\'")}')">${n}</div>`).join('')
-        +`<div class="pitcher-chip custom-chip" onclick="selectInnPitcher('__custom__')">✏️ Other…</div>`;
+renderRoster();
+if(navigator.onLine){
+  syncRosterFromCloud().then(fresh=>{
+    if(fresh&&fresh.length){
+      const active=document.getElementById('screen-inning');
+      if(active&&active.classList.contains('active')&&G){
+        const el=document.getElementById('inn-pitcher-grid');
+        if(el)el.innerHTML=fresh.map(n=>`<div class="pitcher-chip ${selectedInnPitcher===n?'selected':''}" onclick="selectInnPitcher('${n.replace(/'/g,"\\'")}')">${n}</div>`).join('')
+          +`<div class="pitcher-chip custom-chip" onclick="selectInnPitcher('__custom__')">✏️ Other…</div>`;
+      }
     }
-  }
-});
+  });
+}
 const _a=getActive();if(_a&&_a.opp)G=_a;
 </script>
 </body>
