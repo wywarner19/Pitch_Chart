@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1332,12 +1333,23 @@ function calcGame(g){
 function endInning(){
   const ci={...G.currentInning,abs:[...G.currentInning.abs]};
   ci.abs=ci.abs.map(ab=>({ ...ab, pitcher:ab.pitcher||ci.pitcher||'' }));
-  const lastPitcher=ci.pitcher;
   G.innings.push(ci);
-  G.currentInning={num:G.innings.length+1,pitcher:lastPitcher,pitchCount:0,runsAllowed:0,weScored:null,abs:[],notes:''};
-  document.getElementById('pp-num').textContent='0';
-  document.getElementById('rp-num').textContent='0';
-  document.getElementById('inn-runs-badge').textContent='0';
+
+  // If we re-entered a past inning, restore the tail innings and original current inning
+  if(G._tailInnings){
+    G.innings.push(...G._tailInnings);
+    G.currentInning={...G._tailCurrentInning};
+    delete G._tailInnings;
+    delete G._tailCurrentInning;
+    showToast('Inning updated — back to where you were');
+  } else {
+    const lastPitcher=ci.pitcher;
+    G.currentInning={num:G.innings.length+1,pitcher:lastPitcher,pitchCount:0,runsAllowed:0,weScored:null,abs:[],notes:''};
+  }
+
+  document.getElementById('pp-num').textContent=G.currentInning.pitchCount||0;
+  document.getElementById('rp-num').textContent=G.currentInning.runsAllowed||0;
+  document.getElementById('inn-runs-badge').textContent=G.currentInning.runsAllowed||0;
   saveActive();const s=calcInn(ci);renderInnSum(ci,s);showScreen('screen-inn-sum');
 }
 
@@ -1367,6 +1379,8 @@ function sr(lbl,n,d,g){const p=pct(n,d);return `<div class="stat-row"><span clas
 
 function startNextInning(){
   selectedInnPitcher=G.currentInning.pitcher;
+  // Skip the we-scored prompt when re-entering a past inning
+  if(G._tailInnings){enterInning();return;}
   if(G.currentInning.num>1){
     const existing=G.currentInning.weScored??0;
     document.getElementById('we-scored-num').textContent=existing;
@@ -1491,7 +1505,11 @@ function showSumForGame(g,fromHist){
           ${inn.pitcher?`<span class="pill2">${inn.pitcher}</span>`:''}
           <span class="pill2 ${inn.score>=4.25?'pill2b':''}">${inn.score} pts</span>
           <span style="font-size:12px;color:#8e8e93">${inn.pc}p · ${(inn.abs||[]).length} AB</span>
-          ${G?`<button onclick="event.stopPropagation();openInnEdit(${ii})" style="margin-left:auto;padding:4px 10px;font-size:12px;border:1px solid #d1d1d6;border-radius:8px;background:#fff;cursor:pointer;color:#007aff">Edit inn</button>`:'<span style="margin-left:auto;color:#c7c7cc">▾</span>'}
+          ${G
+            ? `<button onclick="event.stopPropagation();openInnEdit(${ii})" style="margin-left:auto;padding:4px 10px;font-size:12px;border:1px solid #d1d1d6;border-radius:8px;background:#fff;cursor:pointer;color:#007aff">Edit inn</button>
+               <button onclick="event.stopPropagation();reEnterInning(${ii})" style="padding:4px 10px;font-size:12px;border:1px solid #34c759;border-radius:8px;background:#f0fff4;cursor:pointer;color:#1a7a3e;white-space:nowrap">↩ Re-enter</button>`
+            : `<button onclick="event.stopPropagation();reopenAndReEnter(${ii})" style="margin-left:auto;padding:4px 10px;font-size:12px;border:1px solid #ff9500;border-radius:8px;background:#fff8f0;cursor:pointer;color:#c05000;white-space:nowrap">↩ Re-enter</button>`
+          }
         </div>
         <div class="hb">
           ${(inn.abs||[]).map((ab,i)=>{rab++;const on=orderNum(rab);
@@ -1533,6 +1551,46 @@ function reopenGame(){
   if(!G.currentInning){const last=G.innings[G.innings.length-1];G.currentInning={num:(last?last.num:0)+1,pitcher:last?.pitcher||'',pitchCount:0,abs:[],notes:''};}
   delFromHistory(viewId);saveActive();viewId=null;renderHome();
   selectedInnPitcher=G.currentInning.pitcher||'';
+  enterInning();
+}
+
+// Re-enter a specific past inning while game is still in progress
+function reEnterInning(innIdx){
+  if(!G)return;
+  if(!confirm(`Re-enter Inning ${G.innings[innIdx].num} for editing? The innings after it will be temporarily held and restored when you end the inning again.`))return;
+
+  // Pull out the target inning and everything after it
+  const tail=G.innings.splice(innIdx); // removes innIdx..end, returns them
+  const target=tail.shift(); // first element is the inning we want to re-enter
+
+  // Save the tail so we can restore it after
+  G._tailInnings=tail;
+  G._tailCurrentInning={...G.currentInning}; // save original current inning too
+
+  // Make the target inning the active current inning
+  G.currentInning={...target};
+  saveActive();
+
+  selectedInnPitcher=G.currentInning.pitcher||'';
+  showToast(`Re-entering Inning ${target.num} — end inning to continue`);
+  enterInning();
+}
+
+// For finalized games: reopen then jump straight to the inning
+function reopenAndReEnter(innIdx){
+  if(!confirm(`Reopen this game and re-enter Inning ${innIdx+1}?`))return;
+  const g=getAll().find(x=>x.id===viewId);if(!g)return;
+  G=g;
+  delFromHistory(viewId);viewId=null;renderHome();
+  // Now re-enter the specific inning
+  const tail=G.innings.splice(innIdx);
+  const target=tail.shift();
+  G._tailInnings=tail;
+  G._tailCurrentInning=G.currentInning||{num:(G.innings.length||0)+1,pitcher:target?.pitcher||'',pitchCount:0,abs:[],notes:''};
+  G.currentInning={...target};
+  saveActive();
+  selectedInnPitcher=G.currentInning.pitcher||'';
+  showToast(`Re-entering Inning ${target.num} — end inning to continue`);
   enterInning();
 }
 
