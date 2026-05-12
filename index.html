@@ -595,7 +595,6 @@ function getAll(){try{return JSON.parse(localStorage.getItem(GKEY)||'[]');}catch
 function setAll(a){try{localStorage.setItem(GKEY,JSON.stringify(a));}catch(e){}}
 function saveToHistory(g){const a=getAll();const i=a.findIndex(x=>x.id===g.id);if(i>=0)a[i]=g;else a.unshift(g);setAll(a);}
 function delFromHistory(id){setAll(getAll().filter(g=>g.id!==id));}
-function saveActive(){if(G)try{localStorage.setItem(AKEY,JSON.stringify(G));}catch(e){}}
 function getActive(){try{const d=localStorage.getItem(AKEY);return d?JSON.parse(d):null;}catch(e){return null;}}
 function clearActive(){try{localStorage.removeItem(AKEY);}catch(e){}}
 function getRoster(){try{return JSON.parse(localStorage.getItem(RKEY)||'[]');}catch(e){return[];}}
@@ -642,7 +641,32 @@ async function sbUpsert(table,row){
   return await res.json();
 }
   
-// ── UI ──
+async function sbDelete(table,query){
+  if(!sbReady()) return;
+  const res=await fetch(`${SB_URL}/rest/v1/${table}${query}`,{
+    method:'DELETE',
+    headers:{apikey:SB_KEY,Authorization:`Bearer ${SB_KEY}`}
+  });
+  if(!res.ok){const txt=await res.text();throw new Error(`sbDelete ${res.status}: ${txt}`);}
+}
+
+// ── AUTO-SAVE THROTTLE ──
+// Every saveActive() call also schedules a Supabase sync 800ms later.
+// If another save comes in before that fires, the timer resets (debounce).
+let _autoSaveTimer=null;
+const _origSaveActive=saveActive;
+function saveActive(){
+  if(G)try{localStorage.setItem(AKEY,JSON.stringify(G));}catch(e){}
+  if(!G)return;
+  clearTimeout(_autoSaveTimer);
+  _autoSaveTimer=setTimeout(()=>{
+    sbUpsert('games',{
+      id:G.id,data:JSON.stringify(G),
+      opp:G.opp||'',date:G.date||'',
+      game_result:G.gameResult||'',finalized:false
+    }).catch(e=>console.warn('Auto-save failed:',e));
+  },800);
+}
 function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);}
 function showOv(id){document.getElementById(id).classList.add('show');}
 function hideOv(id){document.getElementById(id).classList.remove('show');}
@@ -772,11 +796,15 @@ async function renderHome(){
     const inprog=await sbGet('games','?finalized=eq.false&order=created_at.desc');
     const others=inprog.filter(r=>!active||r.id!==active.id);
     if(others.length){
-      h+=`<div style="font-size:12px;font-weight:700;color:#8e8e93;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">In Progress (other devices)</div>`;
-      others.forEach(r=>{const g=JSON.parse(r.data);h+=`<div class="game-card" style="border-color:#ff9500;opacity:.85">
-        <div class="gc-info"><div class="gc-opp">${g.opp||'Unknown'}</div><div class="gc-sub">${g.date||''} · Inning ${g.currentInning?.num||1} · ${(g.innings||[]).length} completed inn</div></div>
-        <div class="gc-result gc-n">In Progress</div><div style="color:#c7c7cc;font-size:20px">›</div>
-      </div>`;});
+      h+=`<div style="font-size:12px;font-weight:700;color:#8e8e93;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">In Progress — other devices</div>`;
+      others.forEach(r=>{
+        let g;try{g=typeof r.data==='string'?JSON.parse(r.data):r.data;}catch(e){return;}
+        h+=`<div class="resume-card" style="border-color:#ff9500;background:#fff8f0" onclick="resumeFromCloud('${r.id}')">
+          <div style="font-size:15px;font-weight:600;color:#ff9500">☁ Resume from cloud</div>
+          <div style="font-size:14px;font-weight:500;margin-top:2px">${g.opp||'Unknown'} — ${g.date||''}</div>
+          <div style="font-size:13px;color:#8e8e93;margin-top:2px">Inning ${g.currentInning?.num||1} · ${(g.innings||[]).length} completed inn</div>
+        </div>`;
+      });
       h+=`<div style="margin-bottom:14px"></div>`;
     }
   }catch(e){
@@ -821,6 +849,30 @@ function resumeGame(){
   enterInning();
 }
 
+async function resumeFromCloud(sbId){
+  try{
+    const rows=await sbGet('games',`?id=eq.${sbId}`);
+    if(!rows||!rows.length){showToast('Game not found in cloud');return;}
+    const r=rows[0];
+    let g;try{g=typeof r.data==='string'?JSON.parse(r.data):r.data;}catch(e){showToast('Could not read cloud game');return;}
+    // Conflict guard: if there's a different local game in progress, ask
+    const local=getActive();
+    if(local&&local.id&&local.id!==g.id){
+      if(!confirm(`You have a different game in progress locally (vs ${local.opp}). Discard it and resume the cloud game instead?`))return;
+    }
+    // Load the cloud game
+    G=g;
+    clearActive();
+    saveActive(); // write to localStorage so it persists locally too
+    selectedInnPitcher=G.currentInning?.pitcher||'';
+    showToast('Game loaded from cloud ☁');
+    enterInning();
+  }catch(e){
+    console.error(e);
+    showToast(`Could not load game: ${e.message||e}`);
+  }
+}
+
 function viewGame(id){const g=getAll().find(x=>x.id===id);if(!g)return;viewId=id;G=null;showSumForGame(g,true);}
 async function saveAndExit(){
   try{
@@ -846,8 +898,9 @@ async function saveAndExit(){
 function startGame(){
   const pitcher=getSelectedSetupPitcher();
   if(!pitcher){showToast('Select a starting pitcher');return;}
-  G={id:Date.now().toString(),date:document.getElementById('s-date').value||'',opp:document.getElementById('s-opp').value.trim()||'Opponent',gameResult:document.getElementById('s-result').value.trim()||'',startingPitcher:pitcher,innings:[],currentInning:{num:1,pitcher,pitchCount:0,abs:[],notes:''}};
-  saveActive();selectedInnPitcher=pitcher;enterInning();
+  G={id:Date.now().toString(),date:document.getElementById('s-date').value||'',opp:document.getElementById('s-opp').value.trim()||'Opponent',gameResult:document.getElementById('s-result').value.trim()||'',startingPitcher:pitcher,innings:[],currentInning:{num:1,pitcher,pitchCount:0,runsAllowed:0,weScored:null,abs:[],notes:''}};
+  saveActive(); // triggers auto-save to Supabase after 800ms
+  selectedInnPitcher=pitcher;enterInning();
 }
 
 // ── INNING ──
@@ -1372,15 +1425,27 @@ function buildReview(inns){
   document.getElementById('review-list').innerHTML=h;
 }
 
-function finalizeGame(){
+async function finalizeGame(){
   syncInn();
   if(G.currentInning.abs.length>0){
     if(confirm(`Include current inning (Inning ${G.currentInning.num}, ${G.currentInning.abs.length} AB) in the final summary?`)){
-        const fin={...G.currentInning,abs:[...G.currentInning.abs]};
-        fin.abs=fin.abs.map(ab=>({ ...ab, pitcher:ab.pitcher||fin.pitcher||'' }));
-        G.innings.push(fin);    }
+      const fin={...G.currentInning,abs:[...G.currentInning.abs]};
+      fin.abs=fin.abs.map(ab=>({ ...ab, pitcher:ab.pitcher||fin.pitcher||'' }));
+      G.innings.push(fin);
+    }
   }
-  saveToHistory(G);clearActive();viewId=G.id;G=null;
+  saveToHistory(G);
+  clearActive();
+  viewId=G.id;
+  // Push finalized game to Supabase
+  try{
+    await sbUpsert('games',{
+      id:G.id,data:JSON.stringify(G),
+      opp:G.opp||'',date:G.date||'',
+      game_result:G.gameResult||'',finalized:true
+    });
+  }catch(e){console.warn('Supabase finalize failed:',e);showToast('Saved locally — cloud sync failed');}
+  G=null;
   showSummary(true);
 }
 
@@ -1502,8 +1567,16 @@ const rows=[
 function copyExcel(){const text=buildXL(window._sg,window._ss);if(navigator.clipboard?.writeText){navigator.clipboard.writeText(text).then(()=>showToast('Copied!')).catch(()=>fbCopy(text));}else fbCopy(text);}
 function fbCopy(text){const ta=document.getElementById('exp-ta');ta.value=text;document.getElementById('exp-ta-wrap').style.display='block';ta.select();try{document.execCommand('copy');showToast('Copied!');}catch(e){showToast('Select all above and copy');}}
 function dlJSON(){const g=window._sg;if(!g)return;const b=new Blob([JSON.stringify(g,null,2)],{type:'application/json'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=`pitching_${(g.opp||'game').replace(/\s/g,'_')}_${g.date||g.id}.json`;document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(u);showToast('Downloaded!');}
-function saveResult(){const v=document.getElementById('gr-in').value.trim();if(window._sg){window._sg.gameResult=v;saveToHistory(window._sg);}showToast('Saved');renderHome();}
-function deleteGame(){if(!confirm('Delete permanently?'))return;if(viewId)delFromHistory(viewId);viewId=null;renderHome();showScreen('screen-home');}
+function saveResult(){const v=document.getElementById('gr-in').value.trim();if(window._sg){window._sg.gameResult=v;saveToHistory(window._sg);sbUpsert('games',{id:window._sg.id,data:JSON.stringify(window._sg),opp:window._sg.opp||'',date:window._sg.date||'',game_result:v,finalized:true}).catch(e=>console.warn('saveResult cloud sync failed:',e));}showToast('Saved');renderHome();}
+async function deleteGame(){
+  if(!confirm('Delete permanently?'))return;
+  if(viewId){
+    delFromHistory(viewId);
+    try{await sbDelete('games',`?id=eq.${encodeURIComponent(viewId)}`);}
+    catch(e){console.warn('Supabase delete failed:',e);}
+  }
+  viewId=null;renderHome();showScreen('screen-home');
+}
 
 // ── SEASON ──
 function calcSeason(name,games){
