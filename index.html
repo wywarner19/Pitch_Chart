@@ -671,8 +671,9 @@ window.addEventListener('online',()=>{
   document.getElementById('offline-badge').classList.remove('show');
   drainQueue();
   bulkSyncRosterToCloud().then(()=>syncRosterFromCloud()).then(fresh=>{
-    if(fresh&&fresh.length){_renderRosterList(fresh);renderHome();}
+    if(fresh&&fresh.length){_renderRosterList(fresh);}
   });
+  syncFinalizedGamesFromCloud().then(()=>renderHome());
 });
 window.addEventListener('offline',()=>{
   document.getElementById('offline-badge').classList.add('show');
@@ -743,7 +744,26 @@ async function removeRosterPlayer(i){
   try{await sbDelete('roster',`?name=eq.${encodeURIComponent(name)}`);}
   catch(e){console.warn('Supabase roster delete failed:',e);}
 }
-// ── AUTO-SAVE THROTTLE ──
+// Fetch finalized games from Supabase and merge into localStorage
+async function syncFinalizedGamesFromCloud(){
+  if(!isOnline())return;
+  try{
+    const rows=await sbGet('games','?finalized=eq.true&order=created_at.desc');
+    if(!rows||!rows.length)return;
+    const local=getAll();
+    const localIds=new Set(local.map(g=>g.id));
+    let changed=false;
+    rows.forEach(r=>{
+      if(localIds.has(r.id))return; // already have it
+      let d=r.data;
+      if(typeof d==='string')try{d=JSON.parse(d);}catch(e){}
+      if(!d)return;
+      const g={...d,id:r.id,opp:r.opp,date:r.date,gameResult:r.game_result,finalized:true};
+      local.unshift(g);changed=true;
+    });
+    if(changed)setAll(local);
+  }catch(e){console.warn('syncFinalizedGamesFromCloud failed:',e);}
+}
 let _autoSaveTimer=null;
 function saveActive(){
   if(G)try{localStorage.setItem(AKEY,JSON.stringify(G));}catch(e){}
@@ -841,6 +861,8 @@ function switchTab(t){
 }
 
 async function renderHome(){
+  // First sync any finalized games from cloud into localStorage
+  await syncFinalizedGamesFromCloud();
   const all=getAll(),active=getActive();
   let h='';
   try{
@@ -924,7 +946,22 @@ async function resumeFromCloud(sbId){
   }
 }
 
-function viewGame(id){const g=getAll().find(x=>x.id===id);if(!g)return;viewId=id;G=null;showSumForGame(g,true);}
+async function viewGame(id){
+  let g=getAll().find(x=>x.id===id);
+  if(!g&&isOnline()){
+    try{
+      const rows=await sbGet('games',`?id=eq.${id}`);
+      if(rows&&rows.length){
+        let d=rows[0].data;
+        if(typeof d==='string')try{d=JSON.parse(d);}catch(e){}
+        g=d?{...d,id:rows[0].id,opp:rows[0].opp,date:rows[0].date,gameResult:rows[0].game_result}:null;
+        if(g)saveToHistory(g); // cache it locally
+      }
+    }catch(e){console.warn('viewGame cloud fetch failed:',e);}
+  }
+  if(!g){showToast('Game not found');return;}
+  viewId=id;G=null;showSumForGame(g,true);
+}
 async function saveAndExit(){
   try{
     syncInn();
@@ -1431,14 +1468,15 @@ function startNextInning(){
   selectedInnPitcher=G.currentInning.pitcher;
   // Skip the we-scored prompt when re-entering a past inning
   if(G._tailInnings){enterInning();return;}
-  if(G.currentInning.num>1){
-    const existing=G.currentInning.weScored??0;
-    document.getElementById('we-scored-num').textContent=existing;
-    document.getElementById('we-scored-sub').textContent=`Runs we scored in the top of inning ${G.currentInning.num}`;
-    showOv('ov-we-scored');
-  } else {
-    enterInning();
-  }
+  // Skip prompt if this inning already has ABs (user already started it)
+  if(G.currentInning.abs&&G.currentInning.abs.length>0){enterInning();return;}
+  // Inning 1 never needs a we-scored prompt
+  if(G.currentInning.num<=1){enterInning();return;}
+  // Show we-scored prompt for inning 2+
+  const existing=G.currentInning.weScored??0;
+  document.getElementById('we-scored-num').textContent=existing;
+  document.getElementById('we-scored-sub').textContent=`Runs we scored in the top of inning ${G.currentInning.num}`;
+  showOv('ov-we-scored');
 }
 function adjWeScored(n){
   const cur=parseInt(document.getElementById('we-scored-num').textContent)||0;
@@ -1514,7 +1552,13 @@ async function finalizeGame(){
 }
 
 // ── SUMMARY ──
-function sumBack(){if(viewId&&!G){renderHome();showScreen('screen-home');}else showScreen('screen-inning');}
+function sumBack(){
+  if(viewId&&!G){renderHome();showScreen('screen-home');}
+  else{
+    // Always re-enter current inning to ensure fresh state
+    enterInning();
+  }
+}
 function showSummary(final){const g=final&&viewId?getAll().find(x=>x.id===viewId)||G:G;showSumForGame(g,final);}
 
 function showSumForGame(g,fromHist){
