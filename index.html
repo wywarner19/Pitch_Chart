@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1683,28 +1684,85 @@ function exportPitcherReport(){
   const pitcherMap=new Map();
   g.innings.forEach(inn=>{
     const ps=[...new Set((inn.abs||[]).map(ab=>ab.pitcher||inn.pitcher||'').filter(Boolean))];
-    const pitchers=ps.length?ps:[inn.pitcher||'Unknown'];
-    pitchers.forEach(pName=>{
+    (ps.length?ps:[inn.pitcher||'Unknown']).forEach(pName=>{
       if(!pitcherMap.has(pName))pitcherMap.set(pName,{name:pName,innings:[]});
       pitcherMap.get(pName).innings.push(inn);
     });
   });
-  const opp=g.opp||'Game';
-  const dt=g.date||'';
-  const gameTitle=opp+(dt?' \u2014 '+dt:'')+(g.gameResult?' \u00b7 '+g.gameResult:'');
+  const gameTitle=(g.opp||'Game')+(g.date?' \u2014 '+g.date:'')+(g.gameResult?' \u00b7 '+g.gameResult:'');
   const pages=[...pitcherMap.values()].map(pd=>buildPitcherPage(pd,g,gameTitle)).join('<div style="page-break-after:always"></div>');
-  const css=`*{box-sizing:border-box;margin:0;padding:0;}body{font-family:Calibri,Arial,sans-serif;font-size:9pt;color:#000;background:#fff;}@page{size:letter portrait;margin:.5in .5in .5in .5in;}@media print{body{background:#fff;}*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}}.page{width:100%;}.hdr{text-align:center;font-size:12pt;font-weight:bold;border:2px solid #000;padding:6px 10px;margin-bottom:6px;}.abt{width:100%;border-collapse:collapse;margin-bottom:8px;font-size:8.5pt;table-layout:fixed;}.abt th{background:#f2f2f2;font-weight:bold;text-align:center;border:1px solid #555;padding:3px 2px;font-size:8pt;}.abt td{border:1px solid #bbb;text-align:center;padding:2px 1px;height:18px;}.abt td.rnum{background:#f5f5f5;font-weight:bold;width:30px;}.abt td.res{text-align:left;padding-left:6px;}.abt tr.inn-break td{border-top:2.5px dashed #444!important;}.yy{background:#c6efce!important;color:#276221;font-weight:bold;}.yn{background:#ffc7ce!important;color:#9c0006;font-weight:bold;}.bottom{display:flex;gap:0;align-items:flex-start;width:100%;}.bl{width:160px;flex-shrink:0;margin-right:12px;}.pct{border-collapse:collapse;width:100%;font-size:8pt;margin-bottom:6px;}.pct th,.pct td{border:1px solid #555;padding:2px 6px;text-align:center;}.pct th{background:#f2f2f2;font-weight:bold;}.pct td.lbl{background:#f2f2f2;font-weight:bold;text-align:left;padding-left:5px;}.ga{display:flex;gap:6px;margin-bottom:6px;font-size:8.5pt;}.ga-b{border:1px solid #555;padding:2px 8px;white-space:nowrap;}.sct{border-collapse:collapse;width:100%;font-size:8.5pt;margin-bottom:6px;}.sct td,.sct th{border:1px solid #555;padding:2px 6px;text-align:center;}.sct th{background:#f2f2f2;font-weight:bold;}.sct .sc-lbl{background:#f2f2f2;font-weight:bold;text-align:left;padding-left:5px;}.leg{flex-shrink:0;width:210px;margin-left:10px;font-size:8pt;}.leg-ttl{color:#cc0000;font-weight:bold;font-size:8.5pt;margin-bottom:3px;}.leg ul{padding-left:16px;}.leg li{margin-bottom:2px;line-height:1.3;}.bc{flex:1;min-width:0;}.stt{border-collapse:collapse;width:100%;font-size:8.5pt;margin-bottom:0;}.stt th,.stt td{border:1px solid #555;padding:2px 5px;}.stt th{font-weight:bold;}.stt .ph{background:#f2f2f2;font-weight:bold;}.stt .nh{background:#f2f2f2;}.sm{background:#c6efce!important;color:#276221;font-weight:bold;text-align:center;}.sx{background:#ffc7ce!important;color:#9c0006;font-weight:bold;text-align:center;}.sn{text-align:center;font-weight:bold;}.sf{text-align:center;}.sg{text-align:center;color:#555;font-size:7.5pt;}.sl{font-weight:normal;}.gr-box{border:2px solid #000;padding:4px 12px;font-size:9pt;font-weight:bold;display:inline-block;margin-top:8px;}`;
+  const css=`
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:Calibri,Arial,sans-serif;font-size:9pt;color:#000;background:#fff;}
+@page{size:letter portrait;margin:.45in .45in .45in .45in;}
+@media print{*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}}
+.page{width:100%;}
+/* HEADER */
+.hdr{text-align:center;font-size:12pt;font-weight:bold;border:2px solid #000;padding:6px;margin-bottom:5px;}
+/* AB TABLE */
+.abt{width:100%;border-collapse:collapse;margin-bottom:7px;font-size:8pt;}
+.abt th{background:#f0f0f0;font-weight:bold;text-align:center;border:1px solid #666;padding:3px 1px;white-space:nowrap;}
+.abt td{border:1px solid #ccc;text-align:center;padding:2px 1px;height:17px;}
+.abt td.rn{background:#f0f0f0;font-weight:bold;border-color:#888;width:28px;}
+.abt td.res{text-align:left;padding-left:6px;border-color:#888;}
+.abt thead th:first-child{border-color:#888;}
+.abt thead th:last-child{border-color:#888;}
+/* Y/N coloring — selected cell gets color, unselected stays white with plain text */
+.cy{background:#c6efce!important;color:#276221;font-weight:bold;}
+.cn{background:#ffc7ce!important;color:#9c0006;font-weight:bold;}
+.cu{color:#999;font-size:7pt;}/* N/A */
+/* Inning break = dashed top border */
+.abt tr.brk td{border-top:2px dashed #555!important;}
+/* BOTTOM: two-row layout */
+.bot-top{display:flex;gap:10px;margin-bottom:6px;align-items:flex-start;}
+.bot-bot{width:100%;}
+/* Pitch count box */
+.pbox{border:1px solid #666;font-size:8pt;}
+.pbox table{border-collapse:collapse;}
+.pbox table td,.pbox table th{border:1px solid #888;padding:2px 7px;text-align:center;white-space:nowrap;}
+.pbox table th{background:#f0f0f0;font-weight:bold;}
+.pbox table .lbl{background:#f0f0f0;font-weight:bold;text-align:left;padding-left:6px;}
+/* Goal/AVG */
+.garow{display:flex;gap:6px;margin-bottom:5px;align-items:center;font-size:9pt;}
+.gabox{border:1px solid #666;padding:3px 10px;white-space:nowrap;}
+.gabox.hit{background:#ffeb9c;color:#9c5700;}
+.gabox.miss{background:#ffc7ce;color:#9c0006;}
+/* STR1KE Score */
+.scbox{border:1px solid #666;font-size:8pt;}
+.scbox table{border-collapse:collapse;}
+.scbox table td,.scbox table th{border:1px solid #888;padding:2px 7px;text-align:center;}
+.scbox table .lbl{background:#f0f0f0;font-weight:bold;text-align:left;padding-left:6px;font-size:8pt;}
+/* Legend */
+.leg{border:1px solid #666;padding:5px 8px;font-size:8pt;flex-shrink:0;}
+.leg-ttl{color:#cc0000;font-weight:bold;font-size:8.5pt;margin-bottom:3px;}
+.leg ul{padding-left:14px;}
+.leg li{margin-bottom:2px;line-height:1.4;}
+/* Stats table */
+.stt{border-collapse:collapse;width:100%;font-size:8.5pt;}
+.stt td,.stt th{border:1px solid #888;padding:2px 6px;}
+.stt .ph{background:#f0f0f0;font-weight:bold;}
+.stt .sl{font-weight:normal;}
+.stt .sf{text-align:center;}
+.stt .sg{text-align:center;color:#666;font-size:8pt;}
+.sm{background:#c6efce!important;color:#276221;font-weight:bold;text-align:center;}
+.sx{background:#ffc7ce!important;color:#9c0006;font-weight:bold;text-align:center;}
+.sn{text-align:center;font-weight:bold;}
+/* Shutdown row inside stats */
+.shut-row td{padding:3px 6px;font-size:8pt;border:1px solid #888;}
+/* Game result */
+.gr{border:2px solid #000;padding:4px 14px;font-weight:bold;font-size:9pt;display:inline-block;margin-top:7px;}
+`;
   const html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+gameTitle+'</title><style>'+css+'</style></head><body>'+pages+'</body></html>';
   const w=window.open('','_blank','width=900,height=1100');
   if(!w){showToast('Allow pop-ups to export PDF');return;}
-  w.document.write(html);
-  w.document.close();
+  w.document.write(html);w.document.close();
   w.onload=function(){setTimeout(()=>w.print(),400);};
 }
 
 function buildPitcherPage(pd,g,gameTitle){
-  const name=pd.name;
-  const inns=pd.innings;
+  const name=pd.name,inns=pd.innings;
+
+  /* Pitch counts */
   const innPc=inns.map(inn=>{
     if(inn.pitcherCounts&&inn.pitcherCounts[name]!==undefined)return inn.pitcherCounts[name];
     const ps=[...new Set((inn.abs||[]).map(ab=>ab.pitcher||inn.pitcher||'').filter(Boolean))];
@@ -1713,6 +1771,8 @@ function buildPitcherPage(pd,g,gameTitle){
   const totalPitches=innPc.reduce((a,b)=>a+b,0);
   let cum=0;
   const cumulPc=innPc.map((pc,i)=>{if(i===0){cum=pc;return '\u2013';}cum+=pc;return cum;});
+
+  /* Stats */
   let fps=0,fpsTot=0,c11=0,w11=0,c10=0,w10=0,a3p=0,a3pTot=0,ldY=0,ldN=0,ww=0,wwTot=0,free=0,totalAbs=0;
   inns.forEach(inn=>{
     (inn.abs||[]).filter(ab=>(ab.pitcher||inn.pitcher||'')===(name)).forEach((ab,ai)=>{
@@ -1728,38 +1788,180 @@ function buildPitcherPage(pd,g,gameTitle){
   const ipCount=inns.length;
   const pab=totalAbs>0?totalPitches/totalAbs:0;
   const pinn=ipCount>0?totalPitches/ipCount:0;
-  const innScores=inns.map((inn,i)=>{const s=calcInn(inn);return{num:inn.num,score:s.score,pc:innPc[i],cum:cumulPc[i],sdi:s.shutdown};});
-  const avgScore=innScores.length?innScores.reduce((s,i)=>s+i.score,0)/innScores.length:0;
-  const shut=innScores.filter(i=>i.sdi).length;
-  const pct=(n,d)=>d>0?Math.round(n/d*100)+'%':'\u2014';
+
+  /* STR1KE */
+  const innSc=inns.map((inn,i)=>{const s=calcInn(inn);return{num:inn.num,score:s.score,pc:innPc[i],cum:cumulPc[i],sdi:s.shutdown};});
+  const avgScore=innSc.length?innSc.reduce((s,i)=>s+i.score,0)/innSc.length:0;
+  const shut=innSc.filter(i=>i.sdi).length;
+
+  /* Helpers */
   const frac=(n,d)=>d>0?n+'/'+d:'\u2014';
-  const scls=(n,d,goal)=>{if(d<=0)return 'sn';return n/d>=goal?'sm':'sx';};
-  const clsLow=(val,goal)=>val<=goal?'sm':'sx';
+  const pct=(n,d)=>d>0?Math.round(n/d*100)+'%':'\u2014';
+  const scls=(n,d,goal)=>d<=0?'sn':n/d>=goal?'sm':'sx';
+  const clsLow=(v,g)=>v<=g?'sm':'sx';
   const sr=(label,n,d,goal)=>`<tr><td class="sl">${label}</td><td class="sf">${frac(n,d)}</td><td class="${scls(n,d,goal)}">${pct(n,d)}</td><td class="sg">${Math.round(goal*100)}%</td></tr>`;
-  let abRows='';
-  let abN=0;
+
+  /* AB table rows
+     Each metric = 2 cells: Y cell | N cell
+     Selected cell gets color, unselected shows plain letter
+  */
+  const ynPair=(v,forNA=false)=>{
+    if(forNA)return `<td class="cu" colspan="2">N/A</td>`;
+    const yc=v==='Y'?' class="cy"':'';
+    const nc=v==='N'?' class="cn"':'';
+    return `<td${yc}>${v==='Y'?'Y':''}</td><td${nc}>${v==='N'?'N':''}</td>`;
+  };
+
+  let abRows='';let abN=0;
   inns.forEach((inn,iIdx)=>{
     const myAbs=(inn.abs||[]).filter(ab=>(ab.pitcher||inn.pitcher||'')===(name));
     myAbs.forEach((ab,ai)=>{
       abN++;
-      const brk=iIdx>0&&ai===0?'inn-break':'';
-      const yc=(v)=>v==='Y'?' class="yy"':v==='N'?' class="yn"':'';
-      const w11v=ab.cnt11==='N'?'<span style="font-size:7pt;color:#aaa">N/A</span>':(ab.win11||'');
-      const w11c=ab.cnt11==='N'?'':yc(ab.win11);
-      const ldv=ai===0?(ab.leadoff||''):'';
-      const ldc=ai===0?yc(ab.leadoff):'';
+      const brk=iIdx>0&&ai===0?' class="brk"':'';
+      /* 1-1 Win: N/A when 1-1 Count = N */
+      const w11na=ab.cnt11==='N';
+      /* Leadoff: only first AB of inning, others blank */
+      const ldPair=ai===0?ynPair(ab.leadoff):`<td></td><td></td>`;
       const res=(ab.result||'').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-      abRows+=`<tr class="${brk}"><td class="rnum">${abN}</td><td${yc(ab.fps)}>${ab.fps||''}</td><td${yc(ab.fps)}></td><td${yc(ab.cnt11)}>${ab.cnt11||''}</td><td${yc(ab.cnt11)}></td><td${w11c}>${w11v}</td><td${w11c}></td><td${yc(ab.a3p)}>${ab.a3p||''}</td><td${yc(ab.a3p)}></td><td colspan="2"${ldc}>${ldv}</td><td${yc(ab.wewin)}>${ab.wewin||''}</td><td${yc(ab.wewin)}></td><td class="res">${res}</td></tr>`;
+      abRows+=`<tr${brk}>
+        <td class="rn">${abN}</td>
+        ${ynPair(ab.fps)}
+        ${ynPair(ab.cnt11)}
+        ${w11na?`<td class="cu" colspan="2">N/A</td>`:ynPair(ab.win11)}
+        ${ynPair(ab.a3p)}
+        ${ldPair}
+        ${ynPair(ab.wewin)}
+        <td class="res">${res}</td>
+      </tr>`;
     });
   });
-  const innNumRow=innScores.map(i=>`<th>${i.num}</th>`).join('');
-  const pcRow=innScores.map(i=>`<td>${i.pc}</td>`).join('');
-  const cumRow=innScores.map(i=>`<td>${i.cum}</td>`).join('');
-  const sdiRow=innScores.map(i=>`<td>${i.sdi?'Y':'N'}</td>`).join('');
-  const scoreRow=innScores.map(i=>`<td style="font-weight:bold;color:${i.score>=4.25?'#276221':'#9c0006'}">${i.score}</td>`).join('');
-  const avgCls=avgScore>=4.25?'sm':'sx';
+
+  /* Pitch count table — flows horizontally */
+  const ths=innSc.map(i=>`<th>${i.num}</th>`).join('');
+  const pcs=innSc.map(i=>`<td>${i.pc}</td>`).join('');
+  const cums=innSc.map(i=>`<td>${i.cum}</td>`).join('');
+  const sdis=innSc.map(i=>`<td>${i.sdi?'Y':'N'}</td>`).join('');
+  const scs=innSc.map(i=>`<td style="font-weight:bold;color:${i.score>=4.25?'#276221':'#9c0006'}">${i.score}</td>`).join('');
+  const scNums=innSc.map(i=>`<th>${i.num}</th>`).join('');
+
+  const avgCls=avgScore>=4.25?'hit':'miss';
   const notes=inns.map(inn=>inn.notes||'').filter(Boolean).join(' \u00b7 ');
-  return `<div class="page"><div class="hdr">${gameTitle}</div><table class="abt"><colgroup><col style="width:28px"><col style="width:22px"><col style="width:22px"><col style="width:22px"><col style="width:22px"><col style="width:22px"><col style="width:22px"><col style="width:22px"><col style="width:22px"><col style="width:20px"><col style="width:62px"><col style="width:22px"><col style="width:22px"><col></colgroup><thead><tr><th>AB#</th><th colspan="2">FPS</th><th colspan="2">1-1 Count</th><th colspan="2">1-1 Win</th><th colspan="2">A3P</th><th colspan="2">Leadoff Out</th><th colspan="2">We Win</th><th>Result</th></tr></thead><tbody>${abRows}</tbody></table><div class="bottom"><div class="bl"><table class="pct"><tr><td class="lbl">Pitch Count</td>${innNumRow}</tr><tr><td class="lbl"></td>${pcRow}</tr><tr><td class="lbl"></td>${cumRow}</tr><tr><td class="lbl">SDI ?</td>${sdiRow}</tr></table><div class="ga"><div class="ga-b">Goal&nbsp;&nbsp;4.25</div><div class="ga-b ${avgCls}">AVG&nbsp;&nbsp;${avgScore.toFixed(1)}</div></div><table class="sct"><tr><td class="sc-lbl">S.T.R.1 K.E.<br>Score</td>${scoreRow}</tr></table></div><div class="bc"><table class="stt"><thead><tr><th class="ph">${name}</th><th class="nh"></th><th class="nh"></th><th class="ph" style="text-align:center">Goal</th><th class="ph" style="text-align:left;min-width:130px">Notes:</th></tr></thead><tbody><tr><td class="sl">Pitches</td><td class="sf">${ipCount}</td><td class="${clsLow(pinn,15)}">${pinn.toFixed(1)}</td><td class="sg">15</td><td class="sl" rowspan="9" style="vertical-align:top;padding:4px 6px;">${notes}</td></tr><tr><td class="sl"></td><td class="sf">${totalAbs}</td><td class="${clsLow(pab,4)}">${pab.toFixed(1)}</td><td class="sg">4</td></tr>${sr('1st pitch strike %',fps,fpsTot,.60)}${sr('1-0 win %',w10,c10,.60)}${sr('1-1 win %',w11,c11,.60)}${sr('A3P',a3p,a3pTot,.65)}${sr('Leadoff Out',ldY,ldY+ldN,.85)}${sr('Winning %',ww,wwTot,.75)}</tbody></table><div style="display:flex;border:1px solid #555;border-top:none;font-size:8pt;"><div style="flex:1;padding:3px 6px;border-right:1px solid #555;">Shutdown Innings &nbsp;<b>${shut}/${ipCount}</b>&nbsp;<b>${ipCount>0?Math.round(shut/ipCount*100)+'%':'\u2014'}</b>&nbsp;100%</div><div style="flex:1;padding:3px 6px;border-right:1px solid #555;">Free 90s (BB &amp; HBP) &nbsp;<b>${free}</b>&nbsp;<b>${ipCount>0?(free/ipCount).toFixed(1):'\u2014'}</b>&nbsp;1/inn</div><div style="padding:3px 6px;font-size:7.5pt;flex:1.2;">A3P = On/Out or in two-strikes within 3 pitches</div></div><div><span class="gr-box">Game Result: &nbsp;&nbsp;${g.gameResult||'\u2014'}</span></div></div><div class="leg"><div class="leg-ttl">S.T.R.1 K.E. grade (9 pts max/inn)</div><ul><li>Goal is 4.25 pts/inn</li><li>(S) Shutdown Inning \u2013 2 points</li><li>(T) \u226415 pitches or less \u2013 1 point</li><li>(R) Retire leadoff out \u2013 1 point</li><li>(1) 1, 2, 3 inning \u2013 1 point</li><li>(K) Strikeout \u2013 1 point (ea)</li><li>(E) End the inning B2B outs \u2013 1 point</li></ul></div></div></div>`;
+
+  return `<div class="page">
+<div class="hdr">${gameTitle}</div>
+
+<table class="abt">
+  <colgroup>
+    <col style="width:28px">
+    <col style="width:20px"><col style="width:20px">
+    <col style="width:20px"><col style="width:20px">
+    <col style="width:20px"><col style="width:20px">
+    <col style="width:20px"><col style="width:20px">
+    <col style="width:20px"><col style="width:55px">
+    <col style="width:20px"><col style="width:20px">
+    <col>
+  </colgroup>
+  <thead><tr>
+    <th>AB#</th>
+    <th colspan="2">FPS</th>
+    <th colspan="2">1-1 Count</th>
+    <th colspan="2">1-1 Win</th>
+    <th colspan="2">A3P</th>
+    <th colspan="2">Leadoff Out</th>
+    <th colspan="2">We Win</th>
+    <th>Result</th>
+  </tr></thead>
+  <tbody>${abRows}</tbody>
+</table>
+
+<div class="bot-top">
+  <!-- LEFT: Pitch Count + Goal/AVG + STR1KE -->
+  <div style="flex-shrink:0;">
+    <div class="pbox" style="margin-bottom:5px;">
+      <table>
+        <tr><th class="lbl">Pitch Count</th>${ths}</tr>
+        <tr><td class="lbl"></td>${pcs}</tr>
+        <tr><td class="lbl"></td>${cums}</tr>
+        <tr><td class="lbl">SDI ?</td>${sdis}</tr>
+      </table>
+    </div>
+    <div class="garow">
+      <div class="gabox">Goal &nbsp; 4.25</div>
+      <div class="gabox ${avgCls}">AVG &nbsp; ${avgScore.toFixed(1)}</div>
+    </div>
+    <div class="scbox">
+      <table>
+        <tr><td class="lbl" style="white-space:nowrap">S.T.R.1 K.E.<br>Score</td>${scs}</tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- RIGHT: Legend -->
+  <div class="leg" style="margin-left:auto;">
+    <div class="leg-ttl">S.T.R.1 K.E. grade (9 pts max/inn)</div>
+    <ul>
+      <li>Goal is 4.25 pts/inn</li>
+      <li>(S) Shutdown Inning \u2013 2 points</li>
+      <li>(T) \u226415 pitches or less \u2013 1 point</li>
+      <li>(R) Retire leadoff out \u2013 1 point</li>
+      <li>(1) 1, 2, 3 inning \u2013 1 point</li>
+      <li>(K) Strikeout \u2013 1 point (ea)</li>
+      <li>(E) End the inning B2B outs \u2013 1 point</li>
+    </ul>
+  </div>
+</div>
+
+<!-- Stats table: full width below -->
+<div class="bot-bot">
+  <table class="stt">
+    <thead>
+      <tr>
+        <th class="ph" style="min-width:120px">${name}</th>
+        <th class="ph" style="width:55px"></th>
+        <th class="ph" style="width:55px"></th>
+        <th class="ph" style="width:45px;text-align:center">Goal</th>
+        <th class="ph" style="text-align:left;">Notes:</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="sl">Pitches</td>
+        <td class="sf">${ipCount}</td>
+        <td class="${clsLow(pinn,15)}">${pinn.toFixed(1)}</td>
+        <td class="sg">15</td>
+        <td class="sl" rowspan="9" style="vertical-align:top;padding:5px 8px;">${notes}</td>
+      </tr>
+      <tr>
+        <td class="sl"></td>
+        <td class="sf">${totalAbs}</td>
+        <td class="${clsLow(pab,4)}">${pab.toFixed(1)}</td>
+        <td class="sg">4</td>
+      </tr>
+      ${sr('1st pitch strike %',fps,fpsTot,.60)}
+      ${sr('1-0 win %',w10,c10,.60)}
+      ${sr('1-1 win %',w11,c11,.60)}
+      ${sr('A3P',a3p,a3pTot,.65)}
+      ${sr('Leadoff Out',ldY,ldY+ldN,.85)}
+      ${sr('Winning %',ww,wwTot,.75)}
+    </tbody>
+  </table>
+  <table class="stt" style="margin-top:-1px;">
+    <tr class="shut-row">
+      <td class="sl" style="width:120px">Shutdown Innings</td>
+      <td class="sf" style="width:55px">${shut}/${ipCount}</td>
+      <td class="${scls(shut,ipCount,1)}" style="width:55px">${pct(shut,ipCount)}</td>
+      <td class="sg" style="width:45px">100%</td>
+      <td class="sl">Free 90s (BB &amp; HBP)</td>
+      <td class="sf">${free}</td>
+      <td class="sf">${ipCount>0?(free/ipCount).toFixed(1):'\u2014'}</td>
+      <td class="sg">1/inn</td>
+      <td class="sl" style="font-size:7.5pt">A3P = On/Out or in two-strikes within 3 pitches</td>
+    </tr>
+  </table>
+  <div><span class="gr">Game Result: &nbsp;&nbsp;${g.gameResult||'\u2014'}</span></div>
+</div>
+
+</div>`;
 }
 
 function saveResult(){const v=document.getElementById('gr-in').value.trim();if(window._sg){window._sg.gameResult=v;saveToHistory(window._sg);sbUpsert('games',{id:window._sg.id,data:JSON.stringify(window._sg),opp:window._sg.opp||'',date:window._sg.date||'',game_result:v,finalized:true}).catch(e=>console.warn('saveResult cloud sync failed:',e));}showToast('Saved');renderHome();}
