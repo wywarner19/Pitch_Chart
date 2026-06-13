@@ -751,7 +751,7 @@ function saveActive(){
   if(!G)return;
   clearTimeout(_autoSaveTimer);
   _autoSaveTimer=setTimeout(()=>{
-    sbUpsert('games',{
+    sbUpsert('games_pitch_chart',{
       id:G.id,data:JSON.stringify(G),
       opp:G.opp||'',date:G.date||'',
       game_result:G.gameResult||'',finalized:false
@@ -845,7 +845,7 @@ async function renderHome(){
   const all=getAll(),active=getActive();
   let h='';
   try{
-    const inprog=await sbGet('games','?finalized=eq.false&order=created_at.desc');
+    const inprog=await sbGet('games_pitch_chart','?finalized=eq.false&order=created_at.desc');
     const others=inprog.filter(r=>!active||r.id!==active.id);
     if(others.length){
       h+=`<div style="font-size:12px;font-weight:700;color:#8e8e93;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">In Progress — other devices</div>`;
@@ -903,7 +903,7 @@ function resumeGame(){
 
 async function resumeFromCloud(sbId){
   try{
-    const rows=await sbGet('games',`?id=eq.${sbId}`);
+    const rows=await sbGet('games_pitch_chart',`?id=eq.${sbId}`);
     if(!rows||!rows.length){showToast('Game not found in cloud');return;}
     const r=rows[0];
     let g;try{g=typeof r.data==='string'?JSON.parse(r.data):r.data;}catch(e){showToast('Could not read cloud game');return;}
@@ -930,7 +930,7 @@ async function saveAndExit(){
   try{
     syncInn();
     saveActive();
-    await sbUpsert('games',{
+    await sbUpsert('games_pitch_chart',{
       id:G.id,
       data:JSON.stringify(G),
       opp:G.opp||'',
@@ -1504,7 +1504,7 @@ async function finalizeGame(){
   viewId=G.id;
   // Push finalized game to Supabase
   try{
-    await sbUpsert('games',{
+    await sbUpsert('games_pitch_chart',{
       id:G.id,data:JSON.stringify(G),
       opp:G.opp||'',date:G.date||'',
       game_result:G.gameResult||'',finalized:true
@@ -1964,12 +1964,12 @@ function buildPitcherPage(pd,g,gameTitle){
 </div>`;
 }
 
-function saveResult(){const v=document.getElementById('gr-in').value.trim();if(window._sg){window._sg.gameResult=v;saveToHistory(window._sg);sbUpsert('games',{id:window._sg.id,data:JSON.stringify(window._sg),opp:window._sg.opp||'',date:window._sg.date||'',game_result:v,finalized:true}).catch(e=>console.warn('saveResult cloud sync failed:',e));}showToast('Saved');renderHome();}
+function saveResult(){const v=document.getElementById('gr-in').value.trim();if(window._sg){window._sg.gameResult=v;saveToHistory(window._sg);sbUpsert('games_pitch_chart',{id:window._sg.id,data:JSON.stringify(window._sg),opp:window._sg.opp||'',date:window._sg.date||'',game_result:v,finalized:true}).catch(e=>console.warn('saveResult cloud sync failed:',e));}showToast('Saved');renderHome();}
 async function deleteGame(){
   if(!confirm('Delete permanently?'))return;
   if(viewId){
     delFromHistory(viewId);
-    try{await sbDelete('games',`?id=eq.${encodeURIComponent(viewId)}`);}
+    try{await sbDelete('games_pitch_chart',`?id=eq.${encodeURIComponent(viewId)}`);}
     catch(e){console.warn('Supabase delete failed:',e);}
   }
   viewId=null;renderHome();showScreen('screen-home');
